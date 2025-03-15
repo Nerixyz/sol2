@@ -28,7 +28,7 @@ jobs:
             apple-clang *
             mingw *
             clang-cl *
-          subrange-policy: "msvc one-per-minor"
+          subrange-policy: "msvc: one-per-minor"
           factors: ""
           latest-factors: ""
           max-standards: 1
@@ -64,6 +64,7 @@ jobs:
           cc: ${{ steps.setup-cpp.outputs.cc }}
           ccflags: ${{ matrix.ccflags }}
           cxx: ${{ steps.setup-cpp.outputs.cxx }}
+          cxxflags: ${{ matrix.cxxflags }}
 
       - name: CMake Workflow
         uses: alandefreitas/cpp-actions/cmake-workflow@master
@@ -71,7 +72,6 @@ jobs:
           cc: ${{ steps.setup-cpp.outputs.cc || matrix.cc }}
           cxx: ${{ steps.setup-cpp.outputs.cxx || matrix.cxx }}
           cxxstd: ${{ matrix.cxxstd }}
-          cxxflags: ${{ matrix.cxxstd }}
           cmake-version: ">=3.26"
           extra-args: '"-DSOL2_LUA_VERSION=5.4" -DSOL2_PLATFORM=x64 -DSOL2_CI=ON -DSOL2_BUILD_LUA=ON -DBUILD_LUA_AS_DLL=OFF -DSOL2_TESTS=ON -DSOL2_EXAMPLES=ON -DSOL2_TESTS_EXAMPLES=ON'
           package: false
