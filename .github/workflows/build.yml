@@ -28,8 +28,9 @@ jobs:
             apple-clang *
             mingw *
             clang-cl *
-          subrange-policy: |
+          subrange-policy: "
             msvc: one-per-minor
+            "
           factors: ""
           latest-factors: ""
           max-standards: 1
