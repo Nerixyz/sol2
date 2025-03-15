@@ -24,7 +24,7 @@ jobs:
           compilers: |
             gcc >=8
             clang >=16
-            msvc 14.11 || 14.16 || 14.20 || 14.29 || 14.30 || 14.40
+            msvc >=14
             apple-clang *
             mingw *
             clang-cl *
@@ -64,7 +64,6 @@ jobs:
           cc: ${{ steps.setup-cpp.outputs.cc }}
           ccflags: ${{ matrix.ccflags }}
           cxx: ${{ steps.setup-cpp.outputs.cxx }}
-          cxxflags: ${{ matrix.cxxflags }}
 
       - name: CMake Workflow
         uses: alandefreitas/cpp-actions/cmake-workflow@master
