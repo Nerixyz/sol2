@@ -32,6 +32,7 @@ jobs:
           factors: ""
           latest-factors: ""
           max-standards: 1
+          trace-commands: true
   build:
     needs: cpp-matrix
     strategy:
