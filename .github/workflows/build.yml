@@ -31,8 +31,8 @@ jobs:
           subrange-policy: |
             foo: bar
             msvc: one-per-minor
-          factors: ""
-          latest-factors: ""
+          latest-factors: |
+            msvc v142 v143
           max-standards: 1
           trace-commands: true
   build:
