@@ -57,7 +57,7 @@ jobs:
           cxx: ${{ steps.setup-cpp.outputs.cxx || matrix.cxx }}
           cxxstd: ${{ matrix.cxxstd }}
           cxxflags: ${{ matrix.cxxstd }}
-          cmake-version: "3.20"
+          cmake-version: "3.30"
           extra-args: '"-DSOL2_LUA_VERSION=5.4" -DSOL2_PLATFORM=x64 -DSOL2_CI=ON -DSOL2_BUILD_LUA=ON -DBUILD_LUA_AS_DLL=OFF -DSOL2_TESTS=ON -DSOL2_EXAMPLES=ON -DSOL2_TESTS_EXAMPLES=ON'
           package: false
           build-type: Debug
