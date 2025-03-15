@@ -16,11 +16,11 @@ jobs:
         uses: alandefreitas/cpp-actions/cpp-matrix@master
         id: cpp-matrix
         with:
-          standards: ">=17"
+          standards: "17"
           compilers: |
-            gcc >=10
-            clang >=17
-            msvc >=15
+            gcc >=8
+            clang >=16
+            msvc 14.11 || 14.16 || 14.20 || 14.29 || 14.30 || 14.40
             apple-clang *
             mingw *
             clang-cl *
@@ -57,6 +57,7 @@ jobs:
           cxx: ${{ steps.setup-cpp.outputs.cxx || matrix.cxx }}
           cxxstd: ${{ matrix.cxxstd }}
           cxxflags: ${{ matrix.cxxstd }}
+          cmake-version: "3.20"
           extra-args: '"-DSOL2_LUA_VERSION:STRING=5.4" -DSOL2_PLATFORM:STRING=x64 -DSOL2_CI=ON -DSOL2_BUILD_LUA:BOOL=ON -DBUILD_LUA_AS_DLL:BOOL=OFF -DSOL2_TESTS:BOOL=ON -DSOL2_EXAMPLES:BOOL=ON -DSOL2_TESTS_EXAMPLES:BOOL=ON'
           package: false
           build-type: Debug
