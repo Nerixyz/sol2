@@ -54,6 +54,17 @@ jobs:
           compiler: ${{ matrix.compiler }}
           version: ${{ matrix.version }}
 
+      - name: Install packages
+        uses: alandefreitas/cpp-actions/package-install@master
+        id: package-install
+        with:
+          apt-get: ${{ matrix.install }}
+          apt-get-ignore-missing: ${{ matrix.is-container }}
+          cc: ${{ steps.setup-cpp.outputs.cc }}
+          ccflags: ${{ matrix.ccflags }}
+          cxx: ${{ steps.setup-cpp.outputs.cxx }}
+          cxxflags: ${{ matrix.cxxflags }}
+
       - name: CMake Workflow
         uses: alandefreitas/cpp-actions/cmake-workflow@master
         with:
@@ -66,3 +77,4 @@ jobs:
           package: false
           build-type: Debug
           install: false
+          generator: ${{ runner.os == 'Windows' && 'Ninja' || '' }}
