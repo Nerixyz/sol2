@@ -31,6 +31,7 @@ jobs:
           subrange-policy: |
             foo: bar
             msvc: one-per-minor
+          factors: "Shared"
           latest-factors: |
             msvc v142 v143
           max-standards: 1
@@ -76,7 +77,9 @@ jobs:
           cxx: ${{ steps.setup-cpp.outputs.cxx || matrix.cxx }}
           cxxstd: ${{ matrix.cxxstd }}
           cmake-version: ">=3.26"
-          extra-args: '"-DSOL2_LUA_VERSION=5.4" -DSOL2_PLATFORM=x64 -DSOL2_CI=ON -DSOL2_BUILD_LUA=ON -DBUILD_LUA_AS_DLL=OFF -DSOL2_TESTS=ON -DSOL2_EXAMPLES=ON -DSOL2_TESTS_EXAMPLES=ON'
+          # prettier-ignore
+          extra-args: "\"-DSOL2_LUA_VERSION=5.4\" -DSOL2_PLATFORM=x64 -DSOL2_CI=ON -DSOL2_BUILD_LUA=ON -DBUILD_LUA_AS_DLL=${{ matrix.shared && 'ON' || 'OFF'}} -DSOL2_TESTS=ON -DSOL2_EXAMPLES=ON -DSOL2_TESTS_EXAMPLES=ON"
           package: false
           build-type: Debug
           install: false
+          generator-toolset: ${{ matrix.v142 && 'v142' || (matrix.v143 && 'v143' || '') }}
