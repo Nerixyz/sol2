@@ -20,7 +20,7 @@ jobs:
         uses: alandefreitas/cpp-actions/cpp-matrix@master
         id: cpp-matrix
         with:
-          standards: "17"
+          standards: ">=17"
           compilers: |
             gcc >=8
             clang >=16
@@ -28,9 +28,10 @@ jobs:
             apple-clang *
             mingw *
             clang-cl *
-          subrange-policy: "msvc: one-per-minor"
+          subrange-policy: "msvc one-per-minor"
           factors: ""
           latest-factors: ""
+          max-standards: 1
   build:
     needs: cpp-matrix
     strategy:
@@ -77,4 +78,3 @@ jobs:
           package: false
           build-type: Debug
           install: false
-          generator: ${{ runner.os == 'Windows' && 'Ninja' || '' }}
