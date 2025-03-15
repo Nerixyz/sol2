@@ -1,0 +1,63 @@
+name: Build
+
+on: [push]
+
+env:
+  CTEST_OUTPUT_ON_FAILURE: 1
+
+jobs:
+  cpp-matrix:
+    runs-on: ubuntu-latest
+    name: Generate Test Matrix
+    outputs:
+      matrix: ${{ steps.cpp-matrix.outputs.matrix }}
+    steps:
+      - name: Generate Test Matrix
+        uses: alandefreitas/cpp-actions/cpp-matrix@master
+        id: cpp-matrix
+        with:
+          standards: ">=17"
+          compilers: |
+            gcc >=10
+            clang >=17
+            msvc >=15
+            apple-clang *
+            mingw *
+            clang-cl *
+          subrange-policy: "msvc: one-per-minor"
+          factors: ""
+          latest-factors: ""
+  build:
+    needs: cpp-matrix
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.cpp-matrix.outputs.matrix) }}
+
+    # use matrix entries
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.runs-on }}
+    container: ${{ matrix.container }}
+
+    steps:
+      - name: Clone library
+        uses: actions/checkout@v4
+
+      - name: Setup C++ Compiler
+        uses: alandefreitas/cpp-actions/setup-cpp@master
+        id: setup-cpp
+        with:
+          compiler: ${{ matrix.compiler }}
+          version: ${{ matrix.version }}
+
+      - name: CMake Workflow
+        uses: alandefreitas/cpp-actions/cmake-workflow@master
+        with:
+          cc: ${{ steps.setup-cpp.outputs.cc || matrix.cc }}
+          cxx: ${{ steps.setup-cpp.outputs.cxx || matrix.cxx }}
+          cxxstd: ${{ matrix.cxxstd }}
+          cxxflags: ${{ matrix.cxxstd }}
+          extra-args: '"-DSOL2_LUA_VERSION:STRING=5.4" -DSOL2_PLATFORM:STRING=x64 -DSOL2_CI=ON -DSOL2_BUILD_LUA:BOOL=ON -DBUILD_LUA_AS_DLL:BOOL=OFF -DSOL2_TESTS:BOOL=ON -DSOL2_EXAMPLES:BOOL=ON -DSOL2_TESTS_EXAMPLES:BOOL=ON'
+          package: false
+          build-type: Debug
+          install: false
