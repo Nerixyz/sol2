@@ -667,6 +667,10 @@ namespace sol {
 		jit,
 		// library for handling utf8: new to Lua
 		utf8,
+		// Luau only
+		buffer,
+		// Luau only
+		vector,
 		// do not use
 		count
 	};

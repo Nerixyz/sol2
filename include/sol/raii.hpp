@@ -67,6 +67,9 @@ namespace sol {
 
 		struct state_deleter {
 			void operator()(lua_State* L) const {
+#if SOL_IS_ON(SOL_USE_LUAU)
+				luaU_garbageCollection::invoke(L);
+#endif
 				lua_close(L);
 			}
 		};

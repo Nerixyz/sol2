@@ -57,7 +57,7 @@ namespace sol {
 		(void)writer_function;
 		(void)userdata_pointer_;
 		(void)strip;
-		return luaL_error(L_, "a non-zero error code (%d) was returned by the lua_Writer for the dump function", result_code);
+		return_luaL_error(L_, "a non-zero error code (%d) was returned by the lua_Writer for the dump function", result_code);
 	}
 
 	inline int dump_throw_on_error(lua_State* L_, int result_code, lua_Writer writer_function, void* userdata_pointer_, bool strip) {

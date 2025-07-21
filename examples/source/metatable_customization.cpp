@@ -43,7 +43,7 @@ void register_thing_type(sol::state& lua) {
 			sol::stack_object source(L, 1);
 			sol::stack_object key(L, 2);
 			if (!source.is<thing>()) {
-				return luaL_error(L,
+				return_luaL_error(L,
 				     "given an incorrect object for this "
 				     "call");
 			}
@@ -102,7 +102,7 @@ void register_thing_type(sol::state& lua) {
 			sol::stack_object key(L, 2);
 			sol::stack_object value(L, 3);
 			if (!source.is<thing>()) {
-				return luaL_error(L,
+				return_luaL_error(L,
 				     "given an incorrect object for this "
 				     "call");
 			}

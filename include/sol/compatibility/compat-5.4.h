@@ -1,7 +1,7 @@
 #ifndef NOT_KEPLER_PROJECT_COMPAT54_H_
 #define NOT_KEPLER_PROJECT_COMPAT54_H_
 
-#if defined(__cplusplus) && !defined(COMPAT53_LUA_CPP)
+#if defined(__cplusplus) && !defined(COMPAT53_LUA_CPP) && !defined(SOL_USE_LUAU)
 extern "C" {
 #endif
 #if __has_include(<lua/lua.h>)
@@ -10,10 +10,12 @@ extern "C" {
   #include <lua/lualib.h>
 #else
   #include <lua.h>
+#if !defined(SOL_USE_LUAU)
   #include <lauxlib.h>
+#endif
   #include <lualib.h>
 #endif
-#if defined(__cplusplus) && !defined(COMPAT53_LUA_CPP)
+#if defined(__cplusplus) && !defined(COMPAT53_LUA_CPP) && !defined(SOL_USE_LUAU)
 }
 #endif
 

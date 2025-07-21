@@ -102,6 +102,9 @@ namespace sol {
 		register_main_thread(L);
 		stack::luajit_exception_handler(L);
 		lua_value::set_lua_state(L);
+#if SOL_IS_ON(SOL_USE_LUAU)
+		lua_setuserdatadtor(L, LUAU_USERDATA_GC_TAG, luaU_garbageCollection::dtor);
+#endif
 	}
 
 	inline std::size_t total_memory_used(lua_State* L) {

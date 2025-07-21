@@ -136,16 +136,18 @@ namespace sol {
 						luaL_requiref(L, "base", luaopen_base, 1);
 						lua_pop(L, 1);
 						break;
+#if SOL_IS_OFF(SOL_USE_LUAU)
 					case lib::package:
 						luaL_requiref(L, "package", luaopen_package, 1);
 						lua_pop(L, 1);
 						break;
+#endif
 #if SOL_IS_OFF(SOL_USE_LUAJIT)
 					case lib::coroutine:
-#if SOL_LUA_VERSION_I_ > 501
+#if SOL_LUA_VERSION_I_ > 501 || SOL_IS_ON(SOL_USE_LUAU)
 						luaL_requiref(L, "coroutine", luaopen_coroutine, 1);
 						lua_pop(L, 1);
-#endif // Lua 5.2+ only
+#endif // Lua 5.2+ and Luau only
 						break;
 #endif // Not LuaJIT - comes builtin
 					case lib::string:
@@ -171,8 +173,10 @@ namespace sol {
 #endif
 						break;
 					case lib::io:
+#if SOL_IS_OFF(SOL_USE_LUAU)
 						luaL_requiref(L, "io", luaopen_io, 1);
 						lua_pop(L, 1);
+#endif
 						break;
 					case lib::os:
 						luaL_requiref(L, "os", luaopen_os, 1);
@@ -183,10 +187,10 @@ namespace sol {
 						lua_pop(L, 1);
 						break;
 					case lib::utf8:
-#if SOL_LUA_VERSION_I_ > 502 && SOL_IS_OFF(SOL_USE_LUAJIT)
+#if SOL_LUA_VERSION_I_ > 502 && SOL_IS_OFF(SOL_USE_LUAJIT) || SOL_IS_ON(SOL_USE_LUAU)
 						luaL_requiref(L, "utf8", luaopen_utf8, 1);
 						lua_pop(L, 1);
-#endif // Lua 5.3+ only
+#endif // Lua 5.3+ and Luau only
 						break;
 					case lib::ffi:
 #if SOL_IS_ON(SOL_USE_LUAJIT) && SOL_IS_OFF(SOL_LUAJIT_FFI_DISABLED)
@@ -199,6 +203,18 @@ namespace sol {
 						luaL_requiref(L, "jit", luaopen_jit, 0);
 						lua_pop(L, 1);
 #endif // LuaJIT Only
+						break;
+					case lib::buffer:
+#if SOL_IS_ON(SOL_USE_LUAU)
+						luaL_requiref(L, "buffer", luaopen_buffer, 0);
+						lua_pop(L, 1);
+#endif // Luau Only
+						break;
+					case lib::vector:
+#if SOL_IS_ON(SOL_USE_LUAU)
+						luaL_requiref(L, "vector", luaopen_vector, 0);
+						lua_pop(L, 1);
+#endif // Luau Only
 						break;
 					case lib::count:
 					default:
@@ -287,6 +303,7 @@ namespace sol {
 			loaders.add(std::forward<Fx>(fx));
 		}
 
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		template <typename E>
 		protected_function_result do_reader(lua_Reader reader, void* data, const basic_environment<E>& env,
 		     const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
@@ -312,6 +329,7 @@ namespace sol {
 			stack_aligned_protected_function pf(L, -1);
 			return pf();
 		}
+#endif
 
 		template <typename E>
 		protected_function_result do_string(const string_view& code, const basic_environment<E>& env,
@@ -359,6 +377,7 @@ namespace sol {
 			return pf();
 		}
 
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		template <typename Fx,
 		     meta::disable_any<meta::is_string_constructible<meta::unqualified_t<Fx>>,
 		          meta::is_specialization_of<meta::unqualified_t<Fx>, basic_environment>> = meta::enabler>
@@ -375,6 +394,7 @@ namespace sol {
 		     lua_Reader reader, void* data, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			return safe_script(reader, data, script_default_on_error, chunkname, mode);
 		}
+#endif
 
 		template <typename Fx,
 		     meta::disable_any<meta::is_string_constructible<meta::unqualified_t<Fx>>,
@@ -439,6 +459,7 @@ namespace sol {
 			return safe_script_file(filename, script_default_on_error, mode);
 		}
 
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		template <typename E>
 		unsafe_function_result unsafe_script(lua_Reader reader, void* data, const basic_environment<E>& env,
 		     const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
@@ -465,6 +486,7 @@ namespace sol {
 			int returns = postindex - index;
 			return unsafe_function_result(L, (std::max)(postindex - (returns - 1), 1), returns);
 		}
+#endif
 
 		template <typename E>
 		unsafe_function_result unsafe_script(const string_view& code, const basic_environment<E>& env,
@@ -552,11 +574,12 @@ namespace sol {
 		}
 
 #if SOL_IS_ON(SOL_SAFE_FUNCTION_OBJECTS)
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		protected_function_result script(
 		     lua_Reader reader, void* data, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			return safe_script(reader, data, chunkname, mode);
 		}
-
+#endif
 		protected_function_result script(
 		     const string_view& code, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			return safe_script(code, chunkname, mode);
@@ -594,14 +617,14 @@ namespace sol {
 			load_status x = static_cast<load_status>(luaL_loadfilex(L, filename.c_str(), to_string(mode).c_str()));
 			return load_result(L, absolute_index(L, -1), 1, 1, x);
 		}
-
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		load_result load(lua_Reader reader, void* data, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			detail::typical_chunk_name_t basechunkname = {};
 			const char* chunknametarget = detail::make_chunk_name("lua_Reader", chunkname, basechunkname);
 			load_status x = static_cast<load_status>(lua_load(L, reader, data, chunknametarget, to_string(mode).c_str()));
 			return load_result(L, absolute_index(L, -1), 1, 1, x);
 		}
-
+#endif
 		iterator begin() const {
 			return global.begin();
 		}
@@ -617,7 +640,7 @@ namespace sol {
 		const_iterator cend() const {
 			return global.cend();
 		}
-
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		global_table globals() const {
 			// if we return a reference
 			// we'll be screwed a bit
@@ -631,7 +654,22 @@ namespace sol {
 		table registry() const {
 			return reg;
 		}
+#else
+		// Luau uses `globals` & `registry` as macros, sadge.
+		global_table lua_globals() const {
+			// if we return a reference
+			// we'll be screwed a bit
+			return global;
+		}
 
+		global_table& lua_globals() {
+			return global;
+		}
+
+		table lua_registry() const {
+			return reg;
+		}
+#endif
 		std::size_t memory_used() const {
 			return total_memory_used(lua_state());
 		}
@@ -656,7 +694,7 @@ namespace sol {
 		}
 
 		bool is_gc_on() const {
-#if SOL_LUA_VERSION_I_ >= 502
+#if SOL_LUA_VERSION_I_ >= 502 || SOL_IS_ON(SOL_USE_LUAU)
 			return lua_gc(lua_state(), LUA_GCISRUNNING, 0) == 1;
 #else
 			// You cannot turn it off in Lua 5.1
@@ -710,7 +748,11 @@ namespace sol {
 				return gc_mode::incremental;
 			}
 #else
+#if SOL_IS_OFF(SOL_USE_LUAU)
 			lua_gc(lua_state(), LUA_GCSETPAUSE, pause);
+#else
+			(void)pause;
+#endif
 			lua_gc(lua_state(), LUA_GCSETSTEPMUL, step_multiplier);
 			(void)step_byte_size; // means nothing in older versions
 #endif

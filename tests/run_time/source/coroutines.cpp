@@ -64,7 +64,11 @@ inline namespace sol2_test_coroutines {
 			mLuaState = &luaContext;
 			mThread = sol::thread::create(luaContext);
 			sol::state_view luaThreadState = mThread.state();
+#if SOL_IS_ON(SOL_USE_LUAU)
+			mThreadEnvironment = sol::environment(luaThreadState, sol::create, luaThreadState.lua_globals());
+#else
 			mThreadEnvironment = sol::environment(luaThreadState, sol::create, luaThreadState.globals());
+#endif
 			bool thread_environment_set_successfully = sol::set_environment(mThreadEnvironment, mThread);
 			// can be either right now, since it may not have an environment depending on the given script / action
 			REQUIRE((thread_environment_set_successfully || !thread_environment_set_successfully));
