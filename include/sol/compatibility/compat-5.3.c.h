@@ -152,7 +152,9 @@ COMPAT53_API int lua_compare(lua_State* L, int idx1, int idx2, int op) {
 	default:
 		luaL_error(L, "invalid 'op' argument for lua_compare");
 	}
+#if (SOL_IS_OFF(SOL_USE_LUAU))
 	return 0;
+#endif
 }
 
 
@@ -198,7 +200,7 @@ COMPAT53_API void lua_rawsetp(lua_State* L, int i, const void* p) {
 	lua_rawset(L, abs_i);
 }
 
-
+#if SOL_IS_OFF(SOL_USE_LUAU)
 COMPAT53_API lua_Number lua_tonumberx(lua_State* L, int i, int* isnum) {
 	lua_Number n = lua_tonumber(L, i);
 	if (isnum != NULL) {
@@ -206,7 +208,7 @@ COMPAT53_API lua_Number lua_tonumberx(lua_State* L, int i, int* isnum) {
 	}
 	return n;
 }
-
+#endif
 
 COMPAT53_API void luaL_checkversion(lua_State* L) {
 	(void)L;
@@ -291,8 +293,10 @@ COMPAT53_API void* luaL_testudata(lua_State* L, int i, const char* tname) {
 	return p;
 }
 
-
 static int compat53_countlevels(lua_State* L) {
+#if SOL_IS_ON(SOL_USE_LUAU)
+	return unsigned(L->ci - L->base_ci);
+#else
 	lua_Debug ar;
 	int li = 1, le = 1;
 	/* find an upper bound */
@@ -309,6 +313,7 @@ static int compat53_countlevels(lua_State* L) {
 			le = m;
 	}
 	return le - 1;
+#endif
 }
 
 static int compat53_findfield(lua_State* L, int objidx, int level) {
@@ -336,7 +341,11 @@ static int compat53_findfield(lua_State* L, int objidx, int level) {
 
 static int compat53_pushglobalfuncname(lua_State* L, lua_Debug* ar) {
 	int top = lua_gettop(L);
+#if SOL_IS_OFF(SOL_USE_LUAU)
 	lua_getinfo(L, "f", ar); /* push function */
+#else
+	lua_getinfo(L, 0, "f", ar); /* push function */
+#endif
 	lua_pushvalue(L, LUA_GLOBALSINDEX);
 	if (compat53_findfield(L, top + 1, 2)) {
 		lua_copy(L, -1, top + 1); /* move name to proper place */
@@ -350,7 +359,11 @@ static int compat53_pushglobalfuncname(lua_State* L, lua_Debug* ar) {
 }
 
 static void compat53_pushfuncname(lua_State* L, lua_Debug* ar) {
+#if SOL_IS_OFF(SOL_USE_LUAU)
 	if (*ar->namewhat != '\0') /* is there a name? */
+#else
+	if (ar->name && *ar->name != '\0') /* is there a name? */
+#endif
 		lua_pushfstring(L, "function " LUA_QS, ar->name);
 	else if (*ar->what == 'm') /* main? */
 		lua_pushliteral(L, "main chunk");
@@ -370,6 +383,7 @@ static void compat53_pushfuncname(lua_State* L, lua_Debug* ar) {
 #define COMPAT53_LEVELS2 10 /* size of the second part of the stack */
 
 COMPAT53_API void luaL_traceback(lua_State* L, lua_State* L1, const char* msg, int level) {
+#if SOL_IS_OFF(SOL_USE_LUAU)
 	lua_Debug ar;
 	int top = lua_gettop(L);
 	int numlevels = compat53_countlevels(L1);
@@ -393,6 +407,43 @@ COMPAT53_API void luaL_traceback(lua_State* L, lua_State* L1, const char* msg, i
 		}
 	}
 	lua_concat(L, lua_gettop(L) - top);
+#else
+	luaL_Strbuf buf;
+	luaL_buffinit(L, &buf);
+
+	if (msg) {
+		luaL_addstring(&buf, msg);
+		luaL_addstring(&buf, "\n");
+	}
+
+	lua_Debug ar;
+	for (int i = level; lua_getinfo(L1, i, "sln", &ar); ++i) {
+		if (strcmp(ar.what, "C") == 0)
+			continue;
+
+		if (ar.source)
+			luaL_addstring(&buf, ar.short_src);
+
+		if (ar.currentline > 0) {
+			char line[32]; // manual conversion for performance
+			char* lineend = line + sizeof(line);
+			char* lineptr = lineend;
+			for (unsigned int r = ar.currentline; r > 0; r /= 10)
+				*--lineptr = '0' + (r % 10);
+			luaL_addchar(&buf, ':');
+			luaL_addlstring(&buf, lineptr, lineend - lineptr);
+		}
+
+		if (ar.name) {
+			luaL_addstring(&buf, " function ");
+			luaL_addstring(&buf, ar.name);
+		}
+
+		luaL_addchar(&buf, '\n');
+	}
+
+	luaL_pushresult(&buf);
+#endif
 }
 
 
@@ -447,6 +498,7 @@ static const char* compat53_reader(lua_State* L, void* ud, size_t* size) {
 }
 
 
+#if SOL_IS_OFF(SOL_USE_LUAU)
 COMPAT53_API int lua_load(lua_State* L, lua_Reader reader, void* data, const char* source, const char* mode) {
 	int status = LUA_OK;
 	compat53_reader_data compat53_data = { reader, data, 1, 0, 0 };
@@ -462,7 +514,28 @@ COMPAT53_API int lua_load(lua_State* L, lua_Reader reader, void* data, const cha
 	return lua_load(L, compat53_reader, &compat53_data, source);
 #define lua_load COMPAT53_CONCAT(COMPAT53_PREFIX, _load_53)
 }
+#else
+COMPAT53_API int lua_load(lua_State* L, const char* data, size_t size, const char* source, const char* mode) {
+	int status = LUA_OK;
 
+	std::string bytecode = std::string(data, size);
+	if (LuauCompat::details::isValidBytecode(data, size)) { /* binary file? */
+		status = compat53_checkmode(L, mode, "binary", LUA_ERRSYNTAX);
+	}
+	else {
+		status = compat53_checkmode(L, mode, "text", LUA_ERRSYNTAX);
+		bytecode = LuauCompat::compile(bytecode); /* in this case, bytecode contains the source. */
+	}
+
+	if (status != LUA_OK)
+		return status;
+
+	return luau_load(L, source, bytecode.data(), bytecode.size(), 0);
+}
+COMPAT53_API int luaL_loadbuffer(lua_State* L, const char* buff, size_t sz, const char* name) {
+	return lua_load(L, buff, sz, name, NULL);
+}
+#endif
 
 typedef struct {
 	int n;                                    /* number of pre-read characters */
@@ -535,7 +608,7 @@ static int compat53_skipcomment(compat53_LoadF* lf, int* cp) {
 		return 0; /* no comment */
 }
 
-
+#if SOL_IS_OFF(SOL_USE_LUAU)
 COMPAT53_API int luaL_loadfilex(lua_State* L, const char* filename, const char* mode) {
 	compat53_LoadF lf;
 	int status, readstatus;
@@ -598,9 +671,66 @@ COMPAT53_API int luaL_loadfilex(lua_State* L, const char* filename, const char* 
 	lua_remove(L, fnameindex);
 	return status;
 }
+#else
+COMPAT53_API int luaL_loadfilex(lua_State* L, const char* filename, const char* mode) {
+	FILE* f = NULL;
+	const char* source = NULL;
+	char* buffer = NULL;
+	size_t size = 0;
+
+	if (filename == NULL) {
+		f = stdin;
+		source = "=stdin";
+	}
+	else {
+#if defined(_MSC_VER)
+		if (fopen_s(&f, filename, "rb") != 0)
+			return compat53_errfile(L, "open", lua_gettop(L) + 1);
+#else
+		f = fopen(filename, "rb");
+		if (!f)
+			return compat53_errfile(L, "open", lua_gettop(L) + 1);
+#endif
+		source = filename;
+	}
+
+	// seek to end to get file size
+	if (fseek(f, 0, SEEK_END) != 0) {
+		if (f != stdin) fclose(f);
+		return compat53_errfile(L, "seek", lua_gettop(L) + 1);
+	}
+	long fileSize = ftell(f);
+	if (fileSize < 0) {
+		if (f != stdin) fclose(f);
+		return compat53_errfile(L, "tell", lua_gettop(L) + 1);
+	}
+	rewind(f);
+
+	buffer = (char*)malloc((size_t)fileSize);
+	if (!buffer) {
+		if (f != stdin) fclose(f);
+		return compat53_errfile(L, "memory", lua_gettop(L) + 1);
+	}
+
+	size = fread(buffer, 1, (size_t)fileSize, f);
+	if (f != stdin) fclose(f);
+
+	if (size != (size_t)fileSize) {
+		free(buffer);
+		return compat53_errfile(L, "read", lua_gettop(L) + 1);
+	}
+
+	int status = lua_load(L, buffer, size, source, mode);
+	free(buffer);
+	return status;
+}
+#endif
 
 
 COMPAT53_API int luaL_loadbufferx(lua_State* L, const char* buff, size_t sz, const char* name, const char* mode) {
+#if SOL_IS_ON(SOL_USE_LUAU)
+	return lua_load(L, buff, sz, name, mode);
+#else
 	int status = LUA_OK;
 	if (sz > 0 && buff[0] == LUA_SIGNATURE[0]) {
 		status = compat53_checkmode(L, mode, "binary", LUA_ERRSYNTAX);
@@ -611,6 +741,7 @@ COMPAT53_API int luaL_loadbufferx(lua_State* L, const char* buff, size_t sz, con
 	if (status != LUA_OK)
 		return status;
 	return luaL_loadbuffer(L, buff, sz, name);
+#endif
 }
 
 
@@ -656,6 +787,7 @@ COMPAT53_API int luaL_execresult(lua_State* L, int stat) {
 }
 
 
+#if SOL_IS_OFF(SOL_USE_LUAU)
 COMPAT53_API void luaL_buffinit(lua_State* L, luaL_Buffer_53* B) {
 	/* make it crash if used via pointer to a 5.1-style luaL_Buffer */
 	B->b.p = NULL;
@@ -715,7 +847,7 @@ void luaL_pushresult(luaL_Buffer_53* B) {
 	if (B->ptr != B->b.buffer)
 		lua_replace(B->L2, -2); /* remove userdata buffer */
 }
-
+#endif
 
 #endif /* Lua 5.1 */
 

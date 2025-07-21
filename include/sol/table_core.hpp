@@ -58,7 +58,7 @@ namespace sol {
 		};
 
 		inline int fail_on_newindex(lua_State* L_) {
-			return luaL_error(L_, "sol: cannot modify the elements of an enumeration table");
+			return_luaL_error(L_, "sol: cannot modify the elements of an enumeration table");
 		}
 
 	} // namespace detail

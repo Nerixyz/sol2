@@ -82,8 +82,11 @@ TEST_CASE("tables/operator[]", "Check if operator[] retrieval and setting works 
 		REQUIRE(a == "goodbye");
 		REQUIRE(b == 20.4);
 	};
-
+#if SOL_IS_ON(SOL_USE_LUAU)
+	REQUIRE_NOTHROW(assert1(lua.lua_globals()));
+#else
 	REQUIRE_NOTHROW(assert1(lua.globals()));
+#endif
 }
 
 TEST_CASE("tables/operator[] valid", "Test if proxies on tables can lazily evaluate validity") {

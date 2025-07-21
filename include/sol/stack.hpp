@@ -93,11 +93,20 @@ namespace sol {
 		namespace stack_detail {
 			template <typename T>
 			inline int push_as_upvalues(lua_State* L, T& item) {
+#if SOL_IS_OFF(SOL_USE_LUAU)
 				typedef std::decay_t<T> TValue;
 				static const std::size_t itemsize = sizeof(TValue);
 				static const std::size_t voidsize = sizeof(void*);
 				static const std::size_t voidsizem1 = voidsize - 1;
 				static const std::size_t data_t_count = (sizeof(TValue) + voidsizem1) / voidsize;
+#else
+				/* warning C4459: declaration of 'TValue' hides global declaration */
+				typedef std::decay_t<T> _TValue;
+				static const std::size_t itemsize = sizeof(_TValue);
+				static const std::size_t voidsize = sizeof(void*);
+				static const std::size_t voidsizem1 = voidsize - 1;
+				static const std::size_t data_t_count = (sizeof(_TValue) + voidsizem1) / voidsize;
+#endif
 				typedef std::array<void*, data_t_count> data_t;
 
 				data_t data { {} };
@@ -308,6 +317,7 @@ namespace sol {
 			return call_syntax::colon;
 		}
 
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		inline void script(
 		     lua_State* L, lua_Reader reader, void* data, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			detail::typical_chunk_name_t basechunkname = {};
@@ -316,6 +326,7 @@ namespace sol {
 				lua_error(L);
 			}
 		}
+#endif
 
 		inline void script(
 		     lua_State* L, const string_view& code, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {

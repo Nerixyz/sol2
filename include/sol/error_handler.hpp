@@ -99,14 +99,14 @@ namespace sol {
 		push_type_panic_string(L, index, expected, actual, message, "");
 		size_t str_size = 0;
 		const char* str = lua_tolstring(L, -1, &str_size);
-		return luaL_error(L, str);
+		return_luaL_error(L, str);
 	}
 
 	inline int type_panic_c_str(lua_State* L, int index, type expected, type actual, const char* message = nullptr) noexcept(false) {
 		push_type_panic_string(L, index, expected, actual, message == nullptr ? "" : message, "");
 		size_t str_size = 0;
 		const char* str = lua_tolstring(L, -1, &str_size);
-		return luaL_error(L, str);
+		return_luaL_error(L, str);
 	}
 
 	struct type_panic_t {
@@ -125,7 +125,7 @@ namespace sol {
 			push_type_panic_string(L, index, expected, actual, message, "(type check failed in constructor)");
 			size_t str_size = 0;
 			const char* str = lua_tolstring(L, -1, &str_size);
-			return luaL_error(L, str);
+			return_luaL_error(L, str);
 		}
 	};
 
@@ -135,7 +135,7 @@ namespace sol {
 			push_type_panic_string(L, index, expected, actual, message, "(bad argument to variable or function call)");
 			size_t str_size = 0;
 			const char* str = lua_tolstring(L, -1, &str_size);
-			return luaL_error(L, str);
+			return_luaL_error(L, str);
 		}
 	};
 
@@ -153,7 +153,7 @@ namespace sol {
 			}
 			size_t str_size = 0;
 			const char* str = lua_tolstring(L, -1, &str_size);
-			return luaL_error(L, str);
+			return_luaL_error(L, str);
 		}
 	};
 

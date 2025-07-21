@@ -604,14 +604,22 @@ TEST_CASE("compilation/const regression", "make sure constness in tables is resp
 	struct State {
 	public:
 		State() {
+#if SOL_IS_ON(SOL_USE_LUAU)
+			this->state_.lua_globals()["state"] = this;
+#else
 			this->state_.globals()["state"] = this;
+#endif
 		}
 
 		sol::state state_;
 	};
 
 	State state;
+#if SOL_IS_ON(SOL_USE_LUAU)
+	State* s = state.state_.lua_globals()["state"];
+#else
 	State* s = state.state_.globals()["state"];
+#endif
 	REQUIRE(s == &state);
 }
 

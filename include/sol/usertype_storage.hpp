@@ -166,7 +166,7 @@ namespace sol { namespace u_detail {
 	}
 
 	inline int new_index_fail(lua_State* L_) {
-		return luaL_error(L_, "sol: cannot set (new_index) into this object: no defined new_index operation on usertype");
+		return_luaL_error(L_, "sol: cannot set (new_index) into this object: no defined new_index operation on usertype");
 	}
 
 	inline int new_index_target_fail(lua_State* L_, void*) {

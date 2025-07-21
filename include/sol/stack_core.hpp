@@ -73,6 +73,8 @@ namespace sol {
 		inline void* alloc_newuserdata(lua_State* L, std::size_t bytesize) {
 #if SOL_LUA_VERSION_I_ >= 504
 			return lua_newuserdatauv(L, bytesize, 1);
+#elif SOL_IS_ON(SOL_USE_LUAU)
+			return lua_newuserdatatagged(L, bytesize, LUAU_USERDATA_GC_TAG);
 #else
 			return lua_newuserdata(L, bytesize);
 #endif
@@ -339,7 +341,9 @@ namespace sol {
 				else {
 					luaL_error(L, "aligned allocation of userdata block (data section) for '%s' failed", detail::demangle<T>().c_str());
 				}
+#if (SOL_IS_OFF(SOL_USE_LUAU))
 				return nullptr;
+#endif
 			}
 
 			T** pointerpointer = reinterpret_cast<T**>(pointer_adjusted);
@@ -393,7 +397,9 @@ namespace sol {
 				else {
 					luaL_error(L, "aligned allocation of userdata block (data section) for '%s' failed", detail::demangle<T>().c_str());
 				}
+#if SOL_IS_OFF(SOL_USE_LUAU)
 				return nullptr;
+#endif
 			}
 
 			pref = static_cast<T**>(pointer_adjusted);
@@ -471,7 +477,7 @@ namespace sol {
 
 		template <typename T>
 		int cannot_destroy(lua_State* L) {
-			return luaL_error(L,
+			return_luaL_error(L,
 			     "cannot call the destructor for '%s': it is either hidden (protected/private) or removed with '= "
 			     "delete' and thusly this type is being destroyed without properly destroying, invoking undefined "
 			     "behavior: please bind a usertype and specify a custom destructor to define the behavior properly",
@@ -934,7 +940,7 @@ namespace sol {
 				// clang-format on
 				using Tr = meta::conditional_t<use_reference_tag::value, detail::as_reference_tag, meta::unqualified_t<T>>;
 				return stack::push<Tr>(L, std::forward<Arg>(arg), std::forward<Args>(args)...);
-			}
+														}
 
 		} // namespace stack_detail
 
@@ -1343,7 +1349,7 @@ namespace sol {
 
 		template <typename T>
 		int member_default_to_string(std::false_type, lua_State* L) {
-			return luaL_error(L,
+			return_luaL_error(L,
 			     "cannot perform to_string on '%s': no 'to_string' overload in namespace, 'to_string' member "
 			     "function, or operator<<(ostream&, ...) present",
 			     detail::demangle<T>().data());

@@ -1,8 +1,6 @@
-// sol2
-
 // The MIT License (MIT)
 
-// Copyright (c) 2013-2022 Rapptz, ThePhD and contributors
+// Copyright (c) 2013-2020 Rapptz, ThePhD and contributors
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy of
 // this software and associated documentation files (the "Software"), to deal in
@@ -21,8 +19,15 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef SOL_CONFIG_HPP
-#define SOL_CONFIG_HPP
+// This file was generated with a script.
+// Generated 2025-07-16 20:21:26.201973 UTC
+// This header was generated with sol v3.5.0 (revision c1f95a77)
+// https://github.com/ThePhD/sol2
+
+#ifndef SOL_SINGLE_SOL_CONFIG_HPP
+#define SOL_SINGLE_SOL_CONFIG_HPP
+
+// beginning of sol/config.hpp
 
 #define SOL_SAFE_STACK_CHECK 1
 #define SOL_USE_LUAU 1
@@ -31,17 +36,13 @@
 
      To override, place a file in your include paths of the form:
 
-
 . (your include path here)
 | sol (directory, or equivalent)
   | config.hpp (your config.hpp file)
 
-
      So that when sol2 includes the file
 
-
 #include <sol/config.hpp>
-
 
      it gives you the configuration values you desire. Configuration values can be
 seen in the safety.rst of the doc/src, or at
@@ -50,4 +51,6 @@ the build system, or the command line options of your compiler.
 
 */
 
-#endif // SOL_CONFIG_HPP
+// end of sol/config.hpp
+
+#endif // SOL_SINGLE_SOL_CONFIG_HPP

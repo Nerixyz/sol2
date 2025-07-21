@@ -225,7 +225,7 @@ namespace sol {
 				if (m_error_handler.valid(lua_state())) {
 					detail::protected_handler<true, handler_t> h(lua_state(), m_error_handler);
 					base_t::push();
-					int pushcount = stack::multi_push_reference(lua_state(), std::forward<Args>(args)...);
+						int pushcount = stack::multi_push_reference(lua_state(), std::forward<Args>(args)...);
 					return invoke(types<Ret...>(), std::make_index_sequence<sizeof...(Ret)>(), pushcount, h);
 				}
 				else {
