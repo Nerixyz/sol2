@@ -24,9 +24,6 @@
 #ifndef SOL_CONFIG_HPP
 #define SOL_CONFIG_HPP
 
-#define SOL_SAFE_STACK_CHECK 1
-#define SOL_USE_LUAU 1
-
 /* Base, empty configuration file!
 
      To override, place a file in your include paths of the form:

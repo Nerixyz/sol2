@@ -47,7 +47,7 @@ set(SOL2_BUILD_LUA TRUE CACHE BOOL "Always build Lua, do not search for it in th
 set(SOL2_PLATFORM "x64" CACHE STRING "Target platform to compile for when building binaries (x86, x64)")
 option(SOL2_CI "Whether or not we are in continguous integration mode" OFF)
 option(SOL2_SYSTEM_INCLUDE "Whether or not sol2 should be considered a system include. This helps suppress errors for when the sol2 author is a big derp and doesn't fix every single warning, ever." ON)
-option(SOL2_TESTS "Enable build of tests" OFF)
+option(SOL2_TESTS "Enable build of tests" ON)
 option(SOL2_EXAMPLES "Enable build of examples" OFF)
 option(SOL2_INTEROP_EXAMPLES "Enable build of interop examples" OFF)
 option(SOL2_DYNAMIC_LOADING_EXAMPLES "Enable build of interop examples" OFF)
@@ -278,6 +278,10 @@ if (sol2-is-top-level-project)
 
 	if (NOT LUA_FOUND AND NOT LUABUILD_FOUND)
 		message(FATAL_ERROR "sol2 Lua \"${SOL2_LUA_VERSION}\" not found and could not be targeted for building")
+	endif()
+
+	if(NORMALIZED_LUA_VERSION MATCHES "^luau")
+		add_compile_definitions(sol2 INTERFACE SOL_USE_LUAU=1 LUA_VERSION_NUM=501)
 	endif()
 	
 	# # Enable test harness for regular, example or single tests

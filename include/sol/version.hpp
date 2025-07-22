@@ -855,7 +855,6 @@
 
 #if defined(SOL_USE_LUAU)
 	#define SOL_USE_LUAU_I_ SOL_ON
-	#define LUA_VERSION_NUM 501
 	#define SOL_LUA_BIT32_LIB 1
 #else
 	#define SOL_USE_LUAU_I_ SOL_DEFAULT_OFF

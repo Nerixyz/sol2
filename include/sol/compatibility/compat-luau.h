@@ -213,7 +213,7 @@ namespace LuauCompat {
                 };
 
                 // Utility functions
-                constexpr int getOpcodeLength(LuauOpcode op) {
+                static constexpr int getOpcodeLength(LuauOpcode op) {
                     switch (op) {
                     case LOP_GETGLOBAL:
                     case LOP_SETGLOBAL:
@@ -259,7 +259,7 @@ namespace LuauCompat {
                     }
                 }
 
-                uint32_t resolveImport(StateBase& state, size_t importIndex, const Proto* proto) {
+                static uint32_t resolveImport(StateBase& state, size_t importIndex, const Proto* proto) {
                     auto& importList = state.imports()[proto];
                     if (importIndex >= importList.size()) {
                         return 0; // Invalid import
@@ -267,7 +267,7 @@ namespace LuauCompat {
                     return importList[importIndex];
                 }
 
-                uint32_t getConstantKeyIndex(const Proto* proto, const TKey* key, const luaTable* table) {
+                static uint32_t getConstantKeyIndex(const Proto* proto, const TKey* key, const luaTable* table) {
                     if (!proto || !key || !table) return 0;
 
                     for (int i = 0; i < proto->sizek; ++i) {
@@ -280,7 +280,7 @@ namespace LuauCompat {
                 }
 
                 // Collection phase - gather all strings, protos, and imports
-                void collectStrings(StateBase& state, const Proto* proto = nullptr) {
+                static void collectStrings(StateBase& state, const Proto* proto = nullptr) {
                     proto = proto ? proto : state.proto();
                     if (!proto) return;
 
@@ -313,7 +313,7 @@ namespace LuauCompat {
                     }
                 }
 
-                void collectProtos(StateBase& state, const Proto* proto = nullptr) {
+                static void collectProtos(StateBase& state, const Proto* proto = nullptr) {
                     proto = proto ? proto : state.proto();
                     if (!proto) return;
 
@@ -324,7 +324,7 @@ namespace LuauCompat {
                     }
                 }
 
-                void collectImports(StateBase& state, const Proto* proto = nullptr) {
+                static void collectImports(StateBase& state, const Proto* proto = nullptr) {
                     proto = proto ? proto : state.proto();
                     if (!proto) return;
 
@@ -352,7 +352,7 @@ namespace LuauCompat {
                 }
 
                 // Serialization functions
-                void dumpHeader(StateBase& state) {
+                static void dumpHeader(StateBase& state) {
                     state.write<uint8_t>(state.getVersion());
 
                     if (state.getVersion() >= 4) {
@@ -381,7 +381,7 @@ namespace LuauCompat {
                     state.writeVarInt(static_cast<uint32_t>(state.protos().size()));
                 }
 
-                void dumpConstant(StateBase& state, const TValue* value, const Proto* proto) {
+                static void dumpConstant(StateBase& state, const TValue* value, const Proto* proto) {
                     if (!value || !proto) return;
 
                     uint8_t constType = convertConstantType(value);
@@ -441,7 +441,7 @@ namespace LuauCompat {
                     }
                 }
 
-                void dumpTypeInfo(StateBase& state, const Proto* proto) {
+                static void dumpTypeInfo(StateBase& state, const Proto* proto) {
                     if (state.getTypesVersion() == 1) {
                         if (proto->typeinfo) {
                             uint32_t headerSize = (proto->typeinfo[0] & 0x80) ? 4 : 3;
@@ -459,7 +459,7 @@ namespace LuauCompat {
                     }
                 }
 
-                void dumpLineInfo(StateBase& state, const Proto* proto) {
+                static void dumpLineInfo(StateBase& state, const Proto* proto) {
                     if (proto->sizelineinfo > 0 && !state.getStrip()) {
                         state.write<uint8_t>(1);
                         state.write(static_cast<uint8_t>(proto->linegaplog2));
@@ -484,7 +484,7 @@ namespace LuauCompat {
                     }
                 }
 
-                void dumpVariableInfo(StateBase& state, const Proto* proto) {
+                static void dumpVariableInfo(StateBase& state, const Proto* proto) {
                     if ((proto->sizelocvars > 0 || proto->sizeupvalues > 0) && !state.getStrip()) {
                         state.write<uint8_t>(1);
 
@@ -508,7 +508,7 @@ namespace LuauCompat {
                     }
                 }
 
-                void dumpFunction(StateBase& state, const TString* source, const Proto* proto) {
+                static void dumpFunction(StateBase& state, const TString* source, const Proto* proto) {
                     (void)source;
                     if (!proto) return;
 
@@ -556,7 +556,7 @@ namespace LuauCompat {
                 }
 
                 // Main dump function
-                int dump(StateBase& state) {
+                static int dump(StateBase& state) {
                     try {
                         // Collection phase
                         collectStrings(state);
@@ -596,7 +596,7 @@ namespace LuauCompat {
             template<bool UseWriter>
             using State = typename std::conditional<UseWriter, details::StateWriter, details::StateVector>::type;
 
-            int dumpWithWriter(lua_State* L, const Proto* proto, lua_Writer writer, void* data, int strip) {
+            static int dumpWithWriter(lua_State* L, const Proto* proto, lua_Writer writer, void* data, int strip) {
                 if (!L || !proto || !writer) return -1;
 
                 State<true> state{ L, proto, writer, data };
@@ -604,7 +604,7 @@ namespace LuauCompat {
                 return details::dump(state);
             }
 
-            int dumpWithVector(lua_State* L, const Proto* proto, std::vector<uint8_t>& data, int strip) {
+            static int dumpWithVector(lua_State* L, const Proto* proto, std::vector<uint8_t>& data, int strip) {
                 if (!L || !proto) return -1;
 
                 State<false> state{ L, proto, &data };
@@ -730,7 +730,7 @@ namespace LuauCompat {
 
             Udata* userdata = reinterpret_cast<Udata*>(
                 reinterpret_cast<uint8_t*>(userdataPointer) - offsetof(Udata, data)
-                );
+            );
 
             invokeDestructor(L, userdata);
         }
