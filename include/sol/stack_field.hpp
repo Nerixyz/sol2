@@ -192,20 +192,12 @@ namespace sol { namespace stack {
 			else if constexpr (std::is_same_v<T, metatable_key_t>) {
 				(void)key;
 				push(L, std::forward<Value>(value));
-#if SOL_IS_OFF(SOL_USE_LUAU)
 				lua_setmetatable(L, tableindex);
-#else
-				lua_setmetatable(L, tableindex);
-#endif
 			}
 			else if constexpr (raw) {
 				if constexpr (std::is_integral_v<T> && !std::is_same_v<bool, T>) {
 					push(L, std::forward<Value>(value));
-#if SOL_IS_OFF(SOL_USE_LUAU)
 					lua_rawseti(L, tableindex, static_cast<lua_Integer>(key));
-#else
-					lua_rawseti(L, tableindex, static_cast<lua_Integer>(key));
-#endif
 				}
 #if SOL_LUA_VERSION_I_ >= 502
 				else if constexpr (std::is_pointer_v<T> && std::is_void_v<std::remove_pointer_t<T>>) {
@@ -216,11 +208,7 @@ namespace sol { namespace stack {
 				else {
 					push(L, std::forward<Key>(key));
 					push(L, std::forward<Value>(value));
-#if SOL_IS_OFF(SOL_USE_LUAU)
 					lua_rawset(L, tableindex);
-#else
-					lua_rawset(L, tableindex);
-#endif
 				}
 			}
 			else {
@@ -232,11 +220,7 @@ namespace sol { namespace stack {
 					}
 					else {
 						push(L, std::forward<Value>(value));
-#if SOL_IS_OFF(SOL_USE_LUAU)
 						lua_setfield(L, tableindex, &key[0]);
-#else
-						lua_setfield(L, tableindex, &key[0]);
-#endif
 					}
 				}
 #if SOL_LUA_VERSION_I_ >= 503
@@ -248,11 +232,7 @@ namespace sol { namespace stack {
 				else {
 					push(L, std::forward<Key>(key));
 					push(L, std::forward<Value>(value));
-#if SOL_IS_OFF(SOL_USE_LUAU)
 					lua_settable(L, tableindex);
-#else
-					lua_settable(L, tableindex);
-#endif
 				}
 			}
 		}

@@ -232,9 +232,6 @@ namespace sol { namespace u_detail {
 				stack::set_field<false, true>(L_, key, binding_ref, t.stack_index());
 			}
 			else {
-				if (is_destruction) {
-					printf("Hello!!!!\n");
-				}
 				stack::set_field<false, true>(L_, key, make_closure(call_func, nullptr, ics.binding_data), t.stack_index());
 			}
 			t.pop(L_);

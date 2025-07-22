@@ -192,11 +192,7 @@ namespace sol {
 			detail::indexed_insert insert_fx(l, index);
 			detail::insert_default_registrations<T>(insert_fx, detail::property_always_true);
 			if constexpr (!std::is_pointer_v<X>) {
-#if SOL_IS_OFF(SOL_USE_LUAU)
 				l[index] = luaL_Reg { to_string(meta_function::garbage_collect).c_str(), detail::make_destructor<T>() };
-#else
-				printf("What..\n");
-#endif
 			}
 			luaL_setfuncs(L, l, 0);
 

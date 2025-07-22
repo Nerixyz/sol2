@@ -266,11 +266,7 @@ namespace sol { namespace stack {
 					int index = 0;
 					detail::indexed_insert insert_callable(registration_table, index);
 					detail::insert_default_registrations<element>(insert_callable, detail::property_always_true);
-#if SOL_IS_OFF(SOL_USE_LUAU)
 					registration_table[index] = { to_string(meta_function::garbage_collect).c_str(), detail::make_destructor<T>() };
-#else
-					printf("i missed this, i have no idea when this is called.\n");
-#endif
 					luaL_setfuncs(L, registration_table, 0);
 				}
 				lua_setmetatable(L, -2);
@@ -681,11 +677,7 @@ namespace sol { namespace stack {
 				if (luaL_newmetatable(L, name) != 0) {
 					lua_CFunction cdel = detail::user_alloc_destroy<T>;
 					lua_pushcclosure(L, cdel, 0);
-#if SOL_IS_ON(SOL_USE_LUAU)
 					lua_setfield(L, -2, "__gc");
-#else
-					lua_setfield(L, -2, "__gc");
-#endif
 				}
 				lua_setmetatable(L, -2);
 			}
