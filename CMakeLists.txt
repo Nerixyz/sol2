@@ -42,7 +42,7 @@ include(FetchContent)
 
 # # # Configuration
 # # Cached defines, strings, paths and options
-set(SOL2_LUA_VERSION "Luau" CACHE STRING "The version of Lua needed. Can be 5.1, 5.2, 5.3, 5.4, LuaJIT, or a more specific 3-part version number for a specifc Lua (e.g., 5.4.4 or luajit-2.0.5)")
+set(SOL2_LUA_VERSION "Luau 0.683" CACHE STRING "The version of Lua needed. Can be 5.1, 5.2, 5.3, 5.4, LuaJIT, or a more specific 3-part version number for a specifc Lua (e.g., 5.4.4 or luajit-2.0.5)")
 set(SOL2_BUILD_LUA TRUE CACHE BOOL "Always build Lua, do not search for it in the system")
 set(SOL2_PLATFORM "x64" CACHE STRING "Target platform to compile for when building binaries (x86, x64)")
 option(SOL2_CI "Whether or not we are in continguous integration mode" OFF)
@@ -55,8 +55,8 @@ option(SOL2_SINGLE "Enable generation and build of single header files" ON)
 option(SOL2_DOCS "Enable build of documentation" OFF)
 option(SOL2_ENABLE_INSTALL "Enable installation of Sol2" ON)
 # Single tests and examples tests will only be turned on if both SINGLE and TESTS are defined
-CMAKE_DEPENDENT_OPTION(SOL2_TESTS_SINGLE "Enable build of tests using the premade single headers" OFF
-	"SOL2_SINGLE;SOL2_TESTS" ON)
+CMAKE_DEPENDENT_OPTION(SOL2_TESTS_SINGLE "Enable build of tests using the premade single headers" ON
+	"SOL2_SINGLE;SOL2_TESTS" OFF)
 CMAKE_DEPENDENT_OPTION(SOL2_EXAMPLES_SINGLE "Enable build of examples using the generated single headers" OFF
 	"SOL2_SINGLE;SOL2_EXAMPLES" OFF)
 CMAKE_DEPENDENT_OPTION(SOL2_INTEROP_EXAMPLES_SINGLE "Enable build of interop examples using the generated single headers" OFF
@@ -96,7 +96,7 @@ file(GLOB_RECURSE sol2-sources
 # # Add a target for sol2's library to be included by external users
 add_library(sol2 INTERFACE)
 add_library(sol2::sol2 ALIAS sol2)
-target_compile_definitions(sol2 INTERFACE SOL_USE_LUAU=1 SOL_LUA_BIT32_LIB=1 SOL_SAFE_STACK_CHECK=1 LUA_VERSION_NUM=501)
+
 target_include_directories(sol2 ${sol2-system-include}
 	INTERFACE
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

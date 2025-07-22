@@ -12,12 +12,13 @@ include(Common/Core)
 set(LUAU_LATEST_VERSION 0.682)
 
 # Clean up and validate the version
-if (LUA_VERSION MATCHES "^([0-9]+)\\.([0-9]+)$")
+if (LUA_VERSION MATCHES "^Luau ([0-9]+)\\.([0-9]+)$")
     set(LUAU_VERSION ${CMAKE_MATCH_1}.${CMAKE_MATCH_2})
 else()
     set(LUAU_VERSION ${LUAU_LATEST_VERSION})
 endif()
 
+set(LUA_BUILD_LIBRARY_TYPE "STATIC")
 FIND_PACKAGE_MESSAGE(LUABUILD
     "Selecting Luau ${LUAU_VERSION} from '${LUA_VERSION}' and building a ${LUA_BUILD_LIBRARY_TYPE} library..."
     "[${LUAU_VERSION}][${LUA_VERSION}][${LUA_BUILD_LIBRARY_TYPE}]")

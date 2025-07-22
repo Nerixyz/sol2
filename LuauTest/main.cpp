@@ -138,6 +138,13 @@ void test_b() {
     _sleep(1000);
 }
 
+void test_c() {
+    sol::state lua;
+    int x = 0;
+    lua.set_function("beep", [&x]{ ++x; });
+    lua.script("beep()");
+    assert(x == 1);
+}
 
 int main() {
 	std::println("[BEGIN] Luau Sol Test!");
@@ -146,11 +153,17 @@ int main() {
 
         test_a();
     }
-
+    
     {
         Seperator::Init _("Test B");
 
         test_b();
+    }
+
+    {
+        Seperator::Init _("Test C");
+
+        test_c();
     }
 
 	std::println("[END] Luau Sol Test!");
