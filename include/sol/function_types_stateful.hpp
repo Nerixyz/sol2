@@ -132,7 +132,10 @@ namespace sol { namespace function_detail {
 					nr = call_detail::call_wrapped<T, false, false, -1>(L, self.var, mem);
 					break;
 				default:
-					nr = luaL_error(L, "sol: incorrect number of arguments to member variable function");
+#if SOL_IS_OFF(SOL_USE_LUAU)
+					nr =
+#endif
+						luaL_error(L, "sol: incorrect number of arguments to member variable function");
 					break;
 				}
 			}
