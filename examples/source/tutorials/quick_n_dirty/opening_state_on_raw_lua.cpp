@@ -19,10 +19,13 @@ int main(int, char*[]) {
 	lua_pushcclosure(L, &use_sol2, 0);
 	lua_setglobal(L, "use_sol2");
 
+	// TODO: use loadbuffer or similar
+#if SOL_IS_OFF(SOL_USE_LUAU)
 	if (luaL_dostring(L, "use_sol2()")) {
 		lua_error(L);
 		return -1;
 	}
+#endif
 
 	std::cout << std::endl;
 
