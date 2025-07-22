@@ -281,7 +281,7 @@ if (sol2-is-top-level-project)
 	endif()
 
 	if(NORMALIZED_LUA_VERSION MATCHES "^luau")
-		add_compile_definitions(sol2 INTERFACE SOL_USE_LUAU=1 LUA_VERSION_NUM=501)
+		target_compile_definitions(sol2 INTERFACE SOL_USE_LUAU=1 LUA_VERSION_NUM=501)
 	endif()
 	
 	# # Enable test harness for regular, example or single tests
