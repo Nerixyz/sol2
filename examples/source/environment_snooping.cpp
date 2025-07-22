@@ -33,6 +33,16 @@ void complicated(sol::this_state ts) {
 	// looking for?
 	int level = 1;
 	int pre_stack_size = lua_gettop(L);
+#if SOL_IS_ON(SOL_USE_LUAU)
+	// Luau doesn't support 'S' but takes 's'
+	if (lua_getinfo(L, level, "fnlus", &info) == 0) {
+		std::cout << "manually -- error: unable to get stack "
+		             "information"
+		          << std::endl;
+		lua_settop(L, pre_stack_size);
+		return;
+	}
+#else
 	if (lua_getstack(L, level, &info) != 1) {
 		// failure: call it quits
 		std::cout << "error: unable to traverse the stack"
@@ -52,6 +62,7 @@ void complicated(sol::this_state ts) {
 		lua_settop(L, pre_stack_size);
 		return;
 	}
+#endif
 
 	// Okay, so all the calls worked.
 	// Print out some information about this "level"

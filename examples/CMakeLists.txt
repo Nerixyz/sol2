@@ -107,12 +107,18 @@ endfunction(MAKE_EXAMPLE)
 
 if (SOL2_EXAMPLES)
 	foreach(example_source_file ${sol2.examples.sources})
+		if(NORMALIZED_LUA_VERSION MATCHES "^luau" AND example_source_file MATCHES "custom_reader.cpp$")
+			continue() # Luau doesn't support lua_Reader
+		endif()
 		MAKE_EXAMPLE(${example_source_file} "sol2" sol2::sol2)
 	endforeach()
 endif()
 
 if (SOL2_EXAMPLES_SINGLE)
 	foreach(example_source_file ${sol2.examples.sources})
+		if(NORMALIZED_LUA_VERSION MATCHES "^luau" AND example_source_file MATCHES "custom_reader.cpp$")
+			continue() # Luau doesn't support lua_Reader
+		endif()
 		MAKE_EXAMPLE(${example_source_file} "sol2.single" sol2::sol2::single)
 	endforeach()
 endif()
