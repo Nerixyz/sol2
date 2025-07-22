@@ -640,7 +640,7 @@ namespace sol {
 		const_iterator cend() const {
 			return global.cend();
 		}
-#if SOL_IS_OFF(SOL_USE_LUAU)
+
 		global_table globals() const {
 			// if we return a reference
 			// we'll be screwed a bit
@@ -654,22 +654,7 @@ namespace sol {
 		table registry() const {
 			return reg;
 		}
-#else
-		// Luau uses `globals` & `registry` as macros, sadge.
-		global_table lua_globals() const {
-			// if we return a reference
-			// we'll be screwed a bit
-			return global;
-		}
 
-		global_table& lua_globals() {
-			return global;
-		}
-
-		table lua_registry() const {
-			return reg;
-		}
-#endif
 		std::size_t memory_used() const {
 			return total_memory_used(lua_state());
 		}

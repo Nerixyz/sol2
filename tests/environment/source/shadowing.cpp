@@ -51,11 +51,7 @@ TEST_CASE("environments/shadowing", "Environments can properly shadow and fallba
 		REQUIRE(maybe_global_b.value() == 2142);
 	}
 	SECTION("fallback") {
-#if SOL_IS_ON(SOL_USE_LUAU)
-		sol::environment env_with_fallback(lua, sol::create, lua.lua_globals());
-#else
 		sol::environment env_with_fallback(lua, sol::create, lua.globals());
-#endif
 		auto result1 = lua.safe_script("a = 56", env_with_fallback, sol::script_pass_on_error);
 		REQUIRE(result1.valid());
 		REQUIRE(result1.status() == sol::call_status::ok);
@@ -74,11 +70,7 @@ TEST_CASE("environments/shadowing", "Environments can properly shadow and fallba
 		REQUIRE(maybe_global_b.value() == 2142);
 	}
 	SECTION("from name") {
-#if SOL_IS_ON(SOL_USE_LUAU)
-		sol::environment env_with_fallback(lua, sol::create, lua.lua_globals());
-#else
 		sol::environment env_with_fallback(lua, sol::create, lua.globals());
-#endif
 		lua["env"] = env_with_fallback;
 		sol::environment env = lua["env"];
 		auto result1 = lua.safe_script("a = 56", env, sol::script_pass_on_error);

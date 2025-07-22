@@ -33,15 +33,8 @@ TEST_CASE("issue #1095 - raw_get from global table should NOT fail at all", "[so
 
 	sol::state lua;
 	lua[magic_value] = magic_value;
-#if SOL_IS_ON(SOL_USE_LUAU)
-	std::string test0 = lua.lua_globals().get<std::string>(magic_value);
-	REQUIRE(test0 == magic_value);
-	std::string test1 = lua.lua_globals().raw_get<std::string>(magic_value);
-	REQUIRE(test1 == magic_value);
-#else
 	std::string test0 = lua.globals().get<std::string>(magic_value);
 	REQUIRE(test0 == magic_value);
 	std::string test1 = lua.globals().raw_get<std::string>(magic_value);
 	REQUIRE(test1 == magic_value);
-#endif
 }

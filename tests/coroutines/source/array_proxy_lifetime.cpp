@@ -161,11 +161,7 @@ TEST_CASE("test for issue #1400 - array proxy tests", "[sol2][regression][issue-
 	}
 
 	lua.new_usertype<A>("A", "value", sol::property(&A::getValue), "children", sol::property(&getChildren));
-#if SOL_IS_ON(SOL_USE_LUAU)
-	lua.lua_globals()["A"] = &a;
-#else
 	lua.globals()["A"] = &a;
-#endif
 
 	const auto& code = R"(
 print(A.value)

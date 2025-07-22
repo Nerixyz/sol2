@@ -40,11 +40,7 @@ TEST_CASE("environments/this_environment", "test various situations of pulling o
 		return x + static_cast<int>(lua["x"]);
 	};
 
-#if SOL_IS_ON(SOL_USE_LUAU)
-	sol::environment e(lua, sol::create, lua.lua_globals());
-#else
 	sol::environment e(lua, sol::create, lua.globals());
-#endif
 	lua["x"] = 5;
 	e["x"] = 20;
 	SECTION("from Lua script") {
