@@ -246,12 +246,17 @@ namespace sol {
 					}
 				}
 				if (lua_getinfo(L, "f", &info) == 0) {
-#else
-				if (lua_getinfo(L, 1, "f", &info) == 0) {
-#endif
 					lua_settop(L, pre_stack_size);
 					return this_environment();
 				}
+#else
+				if (lua_getinfo(L, 1, "f", &info) == 0) {
+					if (lua_getinfo(L, 0, "f", &info) == 0) {
+						lua_settop(L, pre_stack_size);
+						return this_environment();
+					}
+				}
+#endif
 
 				stack_reference f(L, -1);
 				environment env(env_key, f);
