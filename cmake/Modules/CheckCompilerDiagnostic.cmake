@@ -49,37 +49,35 @@ function (check_compiler_diagnostic diagnostic)
 	endif()
 	string(MAKE_C_IDENTIFIER "${diagnostic}" suffix)
 	string(TOUPPER "${suffix}" suffix)
+
+	if (MSVC)
+		set(diag_val ${diagnostic_MSVC})
+	elseif (CMAKE_CXX_COMPILER_ID MATCHES Clang)
+		set(diag_val ${diagnostic_CLANG})
+	else()
+		set(diag_val ${diagnostic_GCC})
+	endif()
+
 	get_property(enabled-languages GLOBAL PROPERTY ENABLED_LANGUAGES)
 	if (CXX IN_LIST enabled-languages)
 		if (MSVC)
-			check_cxx_compiler_flag(-wo${diagnostic_MSVC} CXX_DIAGNOSTIC_${suffix})
-		elseif (CMAKE_CXX_COMPILER_ID MATCHES Clang)
-			check_cxx_compiler_flag(-W${diagnostic_CLANG} CXX_DIAGNOSTIC_${suffix})
+			check_cxx_compiler_flag(-wd${diag_val} CXX_DIAGNOSTIC_${suffix})
 		else()
-			check_cxx_compiler_flag(-W${diagnostic_GCC} CXX_DIAGNOSTIC_${suffix})
+			check_cxx_compiler_flag(-W${diag_val} CXX_DIAGNOSTIC_${suffix})
 		endif()
 	endif()
 	if (C IN_LIST enabled-languages)
 		if (MSVC)
-			check_c_compiler_flag(-wo${diagnostic_MSVC} C_DIAGNOSTIC_${suffix})
-		elseif (CMAKE_CXX_COMPILER_ID MATCHES Clang)
-			check_c_compiler_flag(-W${diagnostic_CLANG} C_DIAGNOSTIC_${suffix})
+			check_c_compiler_flag(-wd${diag_val} C_DIAGNOSTIC_${suffix})
 		else()
-			check_c_compiler_flag(-W${diagnostic_GCC} C_DIAGNOSTIC_${suffix})
+			check_c_compiler_flag(-W${diag_val} C_DIAGNOSTIC_${suffix})
 		endif()
 	endif()
 	string(CONCAT when $<OR:
 		$<AND:$<BOOL:${CXX_DIAGNOSTIC_${suffix}}>,$<COMPILE_LANGUAGE:CXX>>,
 		$<AND:$<BOOL:${C_DIAGNOSTIC_${suffix}}>,$<COMPILE_LANGUAGE:C>>
 	>)
-	string(CONCAT diagnostic_flag
-		$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:${diagnostic_MSVC}>
-		$<$<COMPILE_LANG_AND_ID:C,MSVC>:${diagnostic_MSVC}>
-		$<$<COMPILE_LANG_AND_ID:CXX,GNU>:${diagnostic_GCC}>
-		$<$<COMPILE_LANG_AND_ID:C,GNU>:${diagnostic_GCC}>
-		$<$<COMPILE_LANG_AND_ID:CXX,Clang,AppleClang>:${diagnostic_CLANG}>
-		$<$<COMPILE_LANG_AND_ID:C,Clang,AppleClang>:${diagnostic_CLANG}>
-	)
+	set(diagnostic_flag $<$<COMPILE_LANGUAGE:C,CXX>:${diag_val}>)
 	set(forbid_prefix $<IF:$<BOOL:${MSVC}>,-we,-Werror=>)
 	set(allow_prefix $<IF:$<BOOL:${MSVC}>,-wd,-Wno->)
 	set(warn_prefix $<IF:$<BOOL:${MSVC}>,-w1,-W>)

@@ -47,37 +47,25 @@ function (check_compiler_flag flag_name)
 	endif()
 	string(MAKE_C_IDENTIFIER "${flag_name}" suffix)
 	string(TOUPPER "${suffix}" suffix)
+
+	if (MSVC)
+		set(tested_flag ${flag_MSVC})
+	elseif (CMAKE_CXX_COMPILER_ID MATCHES Clang)
+		set(tested_flag ${flag_CLANG})
+	else()
+		set(tested_flag ${flag_GCC})
+	endif()
+
 	get_property(enabled-languages GLOBAL PROPERTY ENABLED_LANGUAGES)
 	if (CXX IN_LIST enabled-languages)
-		if (MSVC)
-			check_cxx_compiler_flag(${flag_MSVC} CXX_CHECK_FLAG_${suffix})
-		elseif (CMAKE_CXX_COMPILER_ID MATCHES Clang)
-			check_cxx_compiler_flag(${flag_CLANG} CXX_CHECK_FLAG_${suffix})
-		else()
-			check_cxx_compiler_flag(${flag_GCC} CXX_CHECK_FLAG_${suffix})
-		endif()
+		check_cxx_compiler_flag(${tested_flag} CXX_CHECK_FLAG_${suffix})
 	endif()
 	if (C IN_LIST enabled-languages)
-		if (MSVC)
-			check_c_compiler_flag(${flag_MSVC} C_CHECK_FLAG_${suffix})
-		elseif (CMAKE_C_COMPILER_ID MATCHES Clang)
-			check_c_compiler_flag(${flag_CLANG} C_CHECK_FLAG_${suffix})
-		else()
-			check_c_compiler_flag(${flag_GCC} C_CHECK_FLAG_${suffix})
-		endif()
+		check_c_compiler_flag(${tested_flag} C_CHECK_FLAG_${suffix})
 	endif()
 	string(CONCAT when $<OR:
 		$<AND:$<BOOL:${CXX_CHECK_FLAG_${suffix}}>,$<COMPILE_LANGUAGE:CXX>>,
 		$<AND:$<BOOL:${C_CHECK_FLAG_${suffix}}>,$<COMPILE_LANGUAGE:C>>
 	>)
-	string(CONCAT compiler_flag
-		$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:${flag_MSVC}>
-		$<$<COMPILE_LANG_AND_ID:C,MSVC>:${flag_MSVC}>
-		$<$<COMPILE_LANG_AND_ID:CXX,GNU>:${flag_GCC}>
-		$<$<COMPILE_LANG_AND_ID:C,GNU>:${flag_GCC}>
-		$<$<COMPILE_LANG_AND_ID:CXX,Clang,AppleClang>:${flag_CLANG}>
-		$<$<COMPILE_LANG_AND_ID:C,Clang,AppleClang>:${flag_CLANG}>
-	)
-
-	set(--${flag_name} $<${when}:${compiler_flag}> PARENT_SCOPE)
+	set(--${flag_name} $<${when}:$<$<COMPILE_LANGUAGE:C,CXX>:${tested_flag}>> PARENT_SCOPE)
 endfunction()
