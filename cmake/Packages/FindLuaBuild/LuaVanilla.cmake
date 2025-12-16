@@ -179,7 +179,7 @@ else()
 	FetchContent_GetProperties(lua-vanilla)
 	if ( NOT lua-vanilla_POPULATED)
 		# Fetch the content using previously declared details
-		FetchContent_Populate(lua-vanilla)
+		FetchContent_MakeAvailable(lua-vanilla)
 		# do not add_subdirectory / build: we are JUST using ti as a download step!
 	endif()
 	list(TRANSFORM LUA_VANILLA_LIB_SOURCES PREPEND "${lua-vanilla_SOURCE_DIR}/src/")
