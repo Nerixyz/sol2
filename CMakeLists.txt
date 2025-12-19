@@ -54,6 +54,7 @@ option(SOL2_DYNAMIC_LOADING_EXAMPLES "Enable build of interop examples" OFF)
 option(SOL2_SINGLE "Enable generation and build of single header files" OFF)
 option(SOL2_DOCS "Enable build of documentation" OFF)
 option(SOL2_ENABLE_INSTALL "Enable installation of Sol2" ON)
+option(SOL2_ENABLE_DUMMY_HEADER_TARGET "Create a target that includes sol2 headers. This is helpful for providing compile commands to clangd." OFF)
 # Single tests and examples tests will only be turned on if both SINGLE and TESTS are defined
 CMAKE_DEPENDENT_OPTION(SOL2_TESTS_SINGLE "Enable build of tests using the premade single headers" ON
 	"SOL2_SINGLE;SOL2_TESTS" OFF)
@@ -100,6 +101,127 @@ target_include_directories(sol2 ${sol2-system-include}
 	INTERFACE
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	$<INSTALL_INTERFACE:include>)
+
+set (sol2_headers
+	abort.hpp
+	as_args.hpp
+	as_returns.hpp
+	assert.hpp
+	base_traits.hpp
+	bind_traits.hpp
+	bytecode.hpp
+	call.hpp
+	compatibility.hpp
+	compatibility/compat-5.3.c.h
+	compatibility/compat-5.3.h
+	compatibility/compat-5.4.h
+	compatibility/lua_version.hpp
+	config.hpp
+	coroutine.hpp
+	debug.hpp
+	demangle.hpp
+	deprecate.hpp
+	detail/build_version.hpp
+	dump_handler.hpp
+	ebco.hpp
+	environment.hpp
+	epilogue.hpp
+	error_handler.hpp
+	error.hpp
+	forward_as.hpp
+	forward_detail.hpp
+	forward.hpp
+	function_result.hpp
+	function_types_core.hpp
+	function_types_overloaded.hpp
+	function_types_stateful.hpp
+	function_types_stateless.hpp
+	function_types_templated.hpp
+	function_types.hpp
+	function.hpp
+	in_place.hpp
+	inheritance.hpp
+	load_result.hpp
+	lua_table.hpp
+	lua_value.hpp
+	make_reference.hpp
+	metatable.hpp
+	object_base.hpp
+	object.hpp
+	optional_implementation.hpp
+	optional.hpp
+	overload.hpp
+	packaged_coroutine.hpp
+	pairs_iterator.hpp
+	pointer_like.hpp
+	policies.hpp
+	prologue.hpp
+	property.hpp
+	protect.hpp
+	protected_function_result.hpp
+	protected_function.hpp
+	protected_handler.hpp
+	proxy_base.hpp
+	raii.hpp
+	reference.hpp
+	resolve.hpp
+	sol.hpp
+	stack_check_get_qualified.hpp
+	stack_check_get_unqualified.hpp
+	stack_check_get.hpp
+	stack_check_qualified.hpp
+	stack_check_unqualified.hpp
+	stack_check.hpp
+	stack_core.hpp
+	stack_field.hpp
+	stack_get_qualified.hpp
+	stack_get_unqualified.hpp
+	stack_get.hpp
+	stack_guard.hpp
+	stack_iterator.hpp
+	stack_pop.hpp
+	stack_probe.hpp
+	stack_proxy_base.hpp
+	stack_proxy.hpp
+	stack_push.hpp
+	stack_reference.hpp
+	stack.hpp
+	stack/detail/pairs.hpp
+	state_handling.hpp
+	state_view.hpp
+	state.hpp
+	string_view.hpp
+	table_core.hpp
+	table_iterator.hpp
+	table_proxy.hpp
+	table.hpp
+	thread.hpp
+	tie.hpp
+	traits.hpp
+	trampoline.hpp
+	tuple.hpp
+	types.hpp
+	unicode.hpp
+	unique_usertype_traits.hpp
+	unreachable.hpp
+	unsafe_function_result.hpp
+	unsafe_function.hpp
+	userdata.hpp
+	usertype_container_launch.hpp
+	usertype_container.hpp
+	usertype_core.hpp
+	usertype_proxy.hpp
+	usertype_storage.hpp
+	usertype_traits.hpp
+	usertype.hpp
+	utility/is_integer.hpp
+	utility/to_string.hpp
+	variadic_args.hpp
+	variadic_results.hpp
+	version.hpp
+	wrapper.hpp
+)
+list(TRANSFORM sol2_headers PREPEND "include/sol/")
 
 # # Version configurations
 configure_package_config_file(
@@ -309,4 +431,17 @@ if (sol2-is-top-level-project)
 		message(STATUS "sol2 adding scratch space...")
 		add_subdirectory(scratch)
 	endif()
+endif()
+
+if ((sol2-is-top-level-project OR SOL2_ENABLE_HEADER_PROJECT) AND TARGET Lua::Lua)
+	add_library(sol2-header-dummy INTERFACE EXCLUDE_FROM_ALL)
+	target_sources(sol2-header-dummy INTERFACE
+		FILE_SET HEADERS
+			BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include"
+			FILES ${sol2_headers}
+	)
+	set_target_properties(sol2-header-dummy PROPERTIES 
+		VERIFY_INTERFACE_HEADER_SETS ON
+	)
+	target_link_libraries(sol2-header-dummy INTERFACE Lua::Lua sol2::sol2)
 endif()
