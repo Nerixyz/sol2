@@ -20,7 +20,7 @@ jobs:
         uses: alandefreitas/cpp-actions/cpp-matrix@master
         id: cpp-matrix
         with:
-          standards: ">=17"
+          standards: ">=17 <=20"
           compilers: |
             gcc >=8
             clang >=16
@@ -31,9 +31,14 @@ jobs:
           subrange-policy: |
             foo: bar
             msvc: one-per-minor
-          factors: "Shared"
           latest-factors: |
-            msvc v142 v143 v144
+            gcc UBSan Coverage Shared
+            clang UBSan ASan MSan Shared
+            apple-clang UBSan ASan Shared
+            msvc DebugBuild RelWithDebInfoBuild Shared
+          build-types: |
+            msvc DebugBuild: Debug
+            msvc RelWithDebInfoBuild: RelWithDebInfo
           max-standards: 1
           trace-commands: true
   build:
@@ -50,7 +55,7 @@ jobs:
 
     steps:
       - name: Clone library
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup C++ Compiler
         uses: alandefreitas/cpp-actions/setup-cpp@master
@@ -77,9 +82,49 @@ jobs:
           cxx: ${{ steps.setup-cpp.outputs.cxx || matrix.cxx }}
           cxxstd: ${{ matrix.cxxstd }}
           cmake-version: ">=3.26"
+          ccflags: ${{ matrix.ccflags }}
+          cxxflags: ${{ matrix.cxxflags }}
+          toolchain: ${{ steps.package-install.outputs.vcpkg_toolchain || steps.package-install.outputs.vcpkg-toolchain }}
+          build-type: ${{ matrix.build-type }}
           # prettier-ignore
           extra-args: "\"-DSOL2_LUA_VERSION=5.4\" -DSOL2_PLATFORM=x64 -DSOL2_CI=ON -DSOL2_BUILD_LUA=ON -DBUILD_LUA_AS_DLL=${{ matrix.shared && 'ON' || 'OFF'}} -DSOL2_TESTS=ON -DSOL2_EXAMPLES=ON -DSOL2_TESTS_EXAMPLES=ON"
           package: false
-          build-type: Debug
           install: false
-          generator-toolset: ${{ matrix.v142 && 'v142' || (matrix.v143 && 'v143' || (matrix.v144 && 'v144' || '')) }}
+
+      # This is mostly copied from the mrdocs CI
+      - name: Codecov
+        id: codecov
+        if: matrix.coverage
+        run: |
+          set -euvx
+
+          # Find gcov
+          gcov_tool="gcov"
+          for version in "${{steps.setup-cpp.outputs.version-major}}" "${{steps.setup-cpp.outputs.version-major}}.${{steps.setup-cpp.outputs.version-minor}}"; do
+            if command -v "gcov-$version" &> /dev/null; then
+              gcov_tool="gcov-$version"
+              break
+            fi
+          done
+
+          dir="./build"
+          lcov --rc branch_coverage=0 --gcov-tool "$gcov_tool" --directory "$dir" --capture --output-file "$dir/all.info" --ignore-errors inconsistent,negative,missing,source
+          lcov --rc branch_coverage=0 --ignore-errors inconsistent,negative,missing,source --list "$dir/all.info"
+          echo "file=$(realpath "$dir/all.info")" >> $GITHUB_OUTPUT
+
+      - name: Upload Coverage as Artifact
+        if: matrix.coverage
+        uses: actions/upload-artifact@v6
+        with:
+          name: Coverage
+          path: ${{ steps.codecov.outputs.file }}
+
+      - name: Codecov Upload
+        uses: codecov/codecov-action@v5
+        if: matrix.coverage
+        with:
+          fail_ci_if_error: true
+          files: ${{ steps.codecov.outputs.file }}
+          disable_search: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: true
