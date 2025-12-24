@@ -7,7 +7,7 @@ This fork attempts to deliver some improvements over upstream. As of December 20
 The following improvements were made:
 
 - Added CI with more configurations (more compiler and Lua versions)
-- Added code coverage
+- Added code coverage [![codecov](https://codecov.io/gh/Nerixyz/sol2/graph/badge.svg?token=1K3ZZZ8JGS)](https://codecov.io/gh/Nerixyz/sol2)
 
 ---
 
