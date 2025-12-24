@@ -1,6 +1,10 @@
 name: Build
 
-on: [push]
+on:
+  push:
+    branches: [main, master, develop, solpp]
+  pull_request:
+    branches: [main, master, develop, solpp]
 
 env:
   CTEST_OUTPUT_ON_FAILURE: 1
