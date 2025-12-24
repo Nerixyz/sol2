@@ -1,8 +1,15 @@
 # sol2
 
-[![Documentation Status](https://readthedocs.org/projects/sol2/badge/?version=latest)](http://sol2.readthedocs.io/en/latest/?badge=latest)
+## solpp
 
+This fork attempts to deliver some improvements over upstream. As of December 2025, the last commit was nine months ago, yet there are bugs with active PRs containing fixes that aren't merged.
 
+The following improvements were made:
+
+- Added CI with more configurations (more compiler and Lua versions)
+- Added code coverage
+
+---
 
 sol2 is a C++ library binding to Lua. It currently supports all Lua versions 5.1+ (LuaJIT 2.0+ and MoonJIT included). sol2 aims to be easy to use and easy to add to a project. The library is header-only for easy integration with projects, and a single header can be used for drag-and-drop start up.
 
