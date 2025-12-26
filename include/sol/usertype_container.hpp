@@ -1189,7 +1189,7 @@ namespace sol {
 			static int next_associative(std::true_type, lua_State* L_) {
 				iter& i = stack::unqualified_get<user<iter>>(L_, 1);
 				auto& it = i.it();
-				auto& end = i.end();
+				auto& end = i.sen();
 				if (it == end) {
 					return stack::push(L_, lua_nil);
 				}
@@ -1237,7 +1237,7 @@ namespace sol {
 			static int pairs_associative(std::true_type, lua_State* L_) {
 				auto& src = get_src(L_);
 				stack::push(L_, next_iter<ip>);
-				stack::push<user<iter>>(L_, L_, 1, deferred_uc::begin(L_, src), deferred_uc::begin(L_, src));
+				stack::push<user<iter>>(L_, L_, 1, deferred_uc::begin(L_, src), deferred_uc::end(L_, src));
 				stack::push(L_, lua_nil);
 				return 3;
 			}
