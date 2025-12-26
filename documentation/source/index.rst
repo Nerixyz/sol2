@@ -1,5 +1,5 @@
 .. image:: media/sol.png
-	:target: https://github.com/ThePhD/sol2
+	:target: https://github.com/nerixyz/sol2
 	:alt: sol repository
 	:align: center
 
@@ -9,6 +9,8 @@ sol2 (sol2, version |version|)
 
 When you need to hit the ground running with Lua and C++, `sol`_ is the go-to framework for high-performance binding with an easy to use API.
 
+`solpp <https://github.com/nerixyz/sol2>`_ is a fork that attempts to deliver some improvements over upstream.
+As of December 2025, the last commit was nine months ago, yet there are bugs with active PRs containing fixes that aren't merged.
 
 
 get going:
@@ -18,7 +20,6 @@ get going:
 	:maxdepth: 1
 	:name: mastertoc
 	
-	tutorial/all-the-things
 	tutorial/tutorial-top
 	errors
 	compilation

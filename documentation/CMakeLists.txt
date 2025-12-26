@@ -25,8 +25,7 @@
 cmake_minimum_required(VERSION 3.26.0)
 	
 find_package(Doxygen REQUIRED)
-find_package(Python3 REQUIRED)
-find_package(Sphinx REQUIRED)
+find_program(uv REQUIRED NAMES uv uv${CMAKE_EXECUTABLE_SUFFIX})
 
 # Find all the public headers
 file(GLOB_RECURSE sol2_public_headers
@@ -83,12 +82,12 @@ add_custom_target(sol2.documentation.doxygen ALL DEPENDS ${SOL2_DOXYGEN_INDEX_FI
 
 if (NOT SOL2_DOCUMENTATION_NO_SPHINX)
 	add_custom_target(sol2.documentation.sphinx ALL
-    COMMAND Sphinx::Build
+    COMMAND uv run sphinx-build
       -b html
       -Dbreathe_projects.sol2=${SOL2_DOXYGEN_XML_OUTPUT_DIR}
       ${SOL2_SPHINX_SOURCE_DIR}
       ${SOL2_SPHINX_BUILD_DIR}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
     DEPENDS ${SOL2_DOXYGEN_INDEX_FILE} ${sol2_sphinx_sources}
     COMMENT "[sol2/documentation] Generating Sphinx documentation..."
     COMMAND_EXPAND_LISTS

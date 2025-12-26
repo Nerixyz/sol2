@@ -1,0 +1,66 @@
+name: Deploy docs to Pages
+
+on:
+  push:
+    branches: [main, master, develop, solpp]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install dependencies
+        run: sudo apt install -y gcc g++ cmake ninja-build doxygen
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Build documentation
+        run: |
+          cmake -B build -DSOL2_DOCS=On -GNinja
+          ninja -C build sol2.documentation.sphinx
+
+      - name: Collect docs
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs
+          path: build/documentation/sphinx/
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - uses: actions/download-artifact@v5
+        with:
+          name: docs
+          path: build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: build
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
