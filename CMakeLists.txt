@@ -265,7 +265,7 @@ endif()
 # Generates the docs
 if (SOL2_DOCS)
 	message(STATUS "sol2 adding docs...")
-	add_subdirectory(documentation)
+	add_subdirectory(documentation EXCLUDE_FROM_ALL)
 endif()
 
 if(SOL2_ENABLE_INSTALL)
