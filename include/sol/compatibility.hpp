@@ -45,6 +45,7 @@
 	#endif // Build Compat Layer Inline
 	#include <sol/compatibility/compat-5.3.h>
 	#include <sol/compatibility/compat-5.4.h>
+	#include <sol/compatibility/compat-5.5.h>
 #endif
 // clang-format on
 

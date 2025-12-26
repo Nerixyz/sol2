@@ -24,6 +24,7 @@
 #ifndef SOL_STATE_HPP
 #define SOL_STATE_HPP
 
+#include <sol/compatibility/compat-5.5.h>
 #include <sol/state_view.hpp>
 #include <sol/thread.hpp>
 
@@ -39,7 +40,7 @@ namespace sol {
 		}
 
 		state(lua_CFunction panic, lua_Alloc alfunc, void* alpointer = nullptr)
-		: unique_base(lua_newstate(alfunc, alpointer)), state_view(unique_base::get()) {
+		: unique_base(sol_detail_lua_newstate(alfunc, alpointer)), state_view(unique_base::get()) {
 			set_default_state(unique_base::get(), panic);
 		}
 

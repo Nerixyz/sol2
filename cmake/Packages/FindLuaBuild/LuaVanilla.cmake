@@ -35,7 +35,8 @@ include(Common/Core)
 set(LUA_VANILLA_5.1_LATEST_VERSION 5.1.5)
 set(LUA_VANILLA_5.2_LATEST_VERSION 5.2.4)
 set(LUA_VANILLA_5.3_LATEST_VERSION 5.3.6)
-set(LUA_VANILLA_5.4_LATEST_VERSION 5.4.4)
+set(LUA_VANILLA_5.4_LATEST_VERSION 5.4.8)
+set(LUA_VANILLA_5.5_LATEST_VERSION 5.5.0)
 
 # Clean up some variables
 if (LUA_VERSION MATCHES "^([0-9]+)\\.([0-9]+)\\.([0-9]+)$")
@@ -52,7 +53,9 @@ elseif (LUA_VERSION MATCHES "([0-9]+)\\.([0-9]+)")
 			set(LUA_VANILLA_VERSION ${LUA_VANILLA_5.3_LATEST_VERSION})
 		elseif (${CMAKE_MATCH_2} EQUAL 4)
 			set(LUA_VANILLA_VERSION ${LUA_VANILLA_5.4_LATEST_VERSION})
-		else()			
+		elseif (${CMAKE_MATCH_2} EQUAL 5)
+			set(LUA_VANILLA_VERSION ${LUA_VANILLA_5.5_LATEST_VERSION})
+		else()
 			# default to whatever the first two
 			# numbers happen to be, plus build 0
 			set(LUA_VANILLA_VERSION ${CMAKE_MATCH_1}.${CMAKE_MATCH_2}.0)
@@ -129,7 +132,7 @@ elseif (LUA_VANILLA_VERSION MATCHES "^5\\.3")
 		set(LUA_VANILLA_LUAC_SOURCES luac.c)
 	endif()
 	set(LUA_VANILLA_GENERATE_LUA_HPP false)
-elseif (LUA_VANILLA_VERSION MATCHES "^5\\.4")
+elseif (LUA_VANILLA_VERSION MATCHES "^5\\.[45]")
 	if (LUA_VANILLA_VERSION MATCHES "work" OR LUA_VANILLA_VERSION MATCHES "alpha"  OR LUA_VANILLA_VERSION MATCHES "beta")
 		set(LUA_VANILLA_DOWNLOAD_URL https://www.lua.org/work/lua-${LUA_VANILLA_VERSION}.tar.gz)
 	endif()
@@ -144,7 +147,7 @@ elseif (LUA_VANILLA_VERSION MATCHES "^5\\.4")
 	endif()
 	set(LUA_VANILLA_GENERATE_LUA_HPP false)
 else()
-	MESSAGE(WARNING "Using Lua 5.4.4 file list for ${LUA_VERSION} version")
+	MESSAGE(WARNING "Using Lua 5.5.0 file list for ${LUA_VERSION} version")
 	set(LUA_VANILLA_LIB_SOURCES lapi.c lauxlib.c lbaselib.c lcode.c lcorolib.c 
 		lctype.c ldblib.c ldebug.c ldo.c ldump.c lfunc.c lgc.c linit.c liolib.c
 		llex.c lmathlib.c lmem.c loadlib.c lobject.c lopcodes.c loslib.c

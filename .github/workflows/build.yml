@@ -44,12 +44,12 @@ jobs:
             msvc DebugBuild: Debug
             msvc RelWithDebInfoBuild: RelWithDebInfo
           factors: |
-            gcc         lua51 lua52 lua53 luaJit
-            clang       lua51 lua52 lua53 luaJit
-            apple-clang lua51 lua52 lua53 luaJit
-            msvc        lua51 lua52 lua53 luaJit
+            gcc         lua51 lua52 lua53 lua54 luaJit
+            clang       lua51 lua52 lua53 lua54 luaJit
+            apple-clang lua51 lua52 lua53 lua54 luaJit
+            msvc        lua51 lua52 lua53 lua54 luaJit
           extra-values: |
-            lua-version: {{#if lua51}}5.1{{else if lua52}}5.2{{else if lua53}}5.3{{else if luaJit}}LuaJIT{{else}}5.4{{/if}}
+            lua-version: {{#if lua51}}5.1{{else if lua52}}5.2{{else if lua53}}5.3{{else if lua54}}5.4{{else if luaJit}}LuaJIT{{else}}5.5{{/if}}
           max-standards: 1
           trace-commands: true
   build:

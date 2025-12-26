@@ -17,7 +17,7 @@ extern "C" {
 }
 #endif
 
-#if defined(LUA_VERSION_NUM) && LUA_VERSION_NUM == 504
+#if defined(LUA_VERSION_NUM) && LUA_VERSION_NUM >= 504
 
 #if !defined(LUA_ERRGCMM)
 /* So Lua 5.4 actually removes this, which breaks sol2...
