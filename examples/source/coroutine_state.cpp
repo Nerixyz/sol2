@@ -1,3 +1,4 @@
+#include <sol/types.hpp>
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
@@ -21,6 +22,11 @@ int main(int, char*[]) {
 		// the state of "t", to the "lua" sol::state
 		transferred_into = sol::function(lua, t);
 	};
+#if SOL_IS_ON(SOL_USE_LUAU)
+	lua["collectgarbage"] = [](sol::this_state L) {
+		lua_gc(L.lua_state(), LUA_GCCOLLECT, 0);
+	};
+#endif
 
 	lua.script(R"(
 		i = 0

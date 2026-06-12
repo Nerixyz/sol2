@@ -238,6 +238,12 @@ namespace sol {
 				// Level 0 means current function (this C function, which may or may not be useful for us?)
 				// Level 1 means next call frame up the stack. (Can be nothing if function called directly from C++ with lua_p/call)
 				int pre_stack_size = lua_gettop(L);
+#if SOL_IS_ON(SOL_USE_LUAU)
+				if (lua_getinfo(L, 1, "f", &info) == 0 && lua_getinfo(L, 0, "f", &info) == 0) {
+					lua_settop(L, pre_stack_size);
+					return this_environment();
+				}
+#else
 				if (lua_getstack(L, 1, &info) != 1) {
 					if (lua_getstack(L, 0, &info) != 1) {
 						lua_settop(L, pre_stack_size);
@@ -248,7 +254,7 @@ namespace sol {
 					lua_settop(L, pre_stack_size);
 					return this_environment();
 				}
-
+#endif
 				stack_reference f(L, -1);
 				environment env(env_key, f);
 				if (!env.valid()) {

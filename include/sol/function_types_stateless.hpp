@@ -147,7 +147,7 @@ namespace sol { namespace function_detail {
 			case 1:
 				return call_detail::call_wrapped<T, false, false, -1>(L, var, mem);
 			default:
-				return luaL_error(L, "sol: incorrect number of arguments to member variable function");
+				SOL_RETURN_LUAL_ERROR(L, "sol: incorrect number of arguments to member variable function");
 			}
 		}
 
@@ -210,7 +210,7 @@ namespace sol { namespace function_detail {
 			case 0:
 				return call_detail::call_wrapped<T, true, false, -1>(L, var, mem);
 			default:
-				return luaL_error(L, "sol: incorrect number of arguments to member variable function");
+				SOL_RETURN_LUAL_ERROR(L, "sol: incorrect number of arguments to member variable function");
 			}
 		}
 
@@ -315,7 +315,7 @@ namespace sol { namespace function_detail {
 			case 2:
 				return call_detail::call_wrapped<T, false, false>(L, var);
 			default:
-				return luaL_error(L, "sol: incorrect number of arguments to member variable function");
+				SOL_RETURN_LUAL_ERROR(L, "sol: incorrect number of arguments to member variable function");
 			}
 		}
 
@@ -361,7 +361,7 @@ namespace sol { namespace function_detail {
 			case 1:
 				return call_detail::call_wrapped<T, true, false>(L, var);
 			default:
-				return luaL_error(L, "sol: incorrect number of arguments to member variable function");
+				SOL_RETURN_LUAL_ERROR(L, "sol: incorrect number of arguments to member variable function");
 			}
 		}
 

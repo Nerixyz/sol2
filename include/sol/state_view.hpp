@@ -24,7 +24,9 @@
 #ifndef SOL_STATE_VIEW_HPP
 #define SOL_STATE_VIEW_HPP
 
+#include "lua.h"
 #include <sol/error.hpp>
+#include <sol/stack_core.hpp>
 #include <sol/table.hpp>
 #include <sol/environment.hpp>
 #include <sol/load_result.hpp>
@@ -136,13 +138,15 @@ namespace sol {
 						luaL_requiref(L, "base", luaopen_base, 1);
 						lua_pop(L, 1);
 						break;
+#if SOL_IS_OFF(SOL_USE_LUAU) // no package lib
 					case lib::package:
 						luaL_requiref(L, "package", luaopen_package, 1);
 						lua_pop(L, 1);
 						break;
+#endif
 #if SOL_IS_OFF(SOL_USE_LUAJIT)
 					case lib::coroutine:
-#if SOL_LUA_VERSION_I_ > 501
+#if SOL_LUA_VERSION_I_ > 501 || SOL_IS_ON(SOL_USE_LUAU)
 						luaL_requiref(L, "coroutine", luaopen_coroutine, 1);
 						lua_pop(L, 1);
 #endif // Lua 5.2+ only
@@ -170,10 +174,12 @@ namespace sol {
 #else
 #endif
 						break;
+#if SOL_IS_OFF(SOL_USE_LUAU) // no io lib
 					case lib::io:
 						luaL_requiref(L, "io", luaopen_io, 1);
 						lua_pop(L, 1);
 						break;
+#endif
 					case lib::os:
 						luaL_requiref(L, "os", luaopen_os, 1);
 						lua_pop(L, 1);
@@ -287,6 +293,7 @@ namespace sol {
 			loaders.add(std::forward<Fx>(fx));
 		}
 
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		template <typename E>
 		protected_function_result do_reader(lua_Reader reader, void* data, const basic_environment<E>& env,
 		     const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
@@ -312,6 +319,7 @@ namespace sol {
 			stack_aligned_protected_function pf(L, -1);
 			return pf();
 		}
+#endif
 
 		template <typename E>
 		protected_function_result do_string(const string_view& code, const basic_environment<E>& env,
@@ -359,6 +367,7 @@ namespace sol {
 			return pf();
 		}
 
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		template <typename Fx,
 		     meta::disable_any<meta::is_string_constructible<meta::unqualified_t<Fx>>,
 		          meta::is_specialization_of<meta::unqualified_t<Fx>, basic_environment>> = meta::enabler>
@@ -375,6 +384,7 @@ namespace sol {
 		     lua_Reader reader, void* data, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			return safe_script(reader, data, script_default_on_error, chunkname, mode);
 		}
+#endif
 
 		template <typename Fx,
 		     meta::disable_any<meta::is_string_constructible<meta::unqualified_t<Fx>>,
@@ -439,6 +449,7 @@ namespace sol {
 			return safe_script_file(filename, script_default_on_error, mode);
 		}
 
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		template <typename E>
 		unsafe_function_result unsafe_script(lua_Reader reader, void* data, const basic_environment<E>& env,
 		     const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
@@ -465,6 +476,7 @@ namespace sol {
 			int returns = postindex - index;
 			return unsafe_function_result(L, (std::max)(postindex - (returns - 1), 1), returns);
 		}
+#endif
 
 		template <typename E>
 		unsafe_function_result unsafe_script(const string_view& code, const basic_environment<E>& env,
@@ -552,10 +564,12 @@ namespace sol {
 		}
 
 #if SOL_IS_ON(SOL_SAFE_FUNCTION_OBJECTS)
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		protected_function_result script(
 		     lua_Reader reader, void* data, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			return safe_script(reader, data, chunkname, mode);
 		}
+#endif
 
 		protected_function_result script(
 		     const string_view& code, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
@@ -595,12 +609,14 @@ namespace sol {
 			return load_result(L, absolute_index(L, -1), 1, 1, x);
 		}
 
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		load_result load(lua_Reader reader, void* data, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			detail::typical_chunk_name_t basechunkname = {};
 			const char* chunknametarget = detail::make_chunk_name("lua_Reader", chunkname, basechunkname);
 			load_status x = static_cast<load_status>(lua_load(L, reader, data, chunknametarget, to_string(mode).c_str()));
 			return load_result(L, absolute_index(L, -1), 1, 1, x);
 		}
+#endif
 
 		iterator begin() const {
 			return global.begin();
@@ -710,7 +726,9 @@ namespace sol {
 				return gc_mode::incremental;
 			}
 #else
+#if SOL_IS_OFF(SOL_USE_LUAU)
 			lua_gc(lua_state(), LUA_GCSETPAUSE, pause);
+#endif
 			lua_gc(lua_state(), LUA_GCSETSTEPMUL, step_multiplier);
 			(void)step_byte_size; // means nothing in older versions
 #endif
@@ -740,8 +758,13 @@ namespace sol {
 			return lua_state();
 		}
 
-		void set_panic(lua_CFunction panic) {
+		void set_panic(PanicHandler panic) {
+#if SOL_IS_ON(SOL_USE_LUAU)
+			lua_Callbacks* cbs = lua_callbacks(lua_state());
+			cbs->panic = panic;
+#else
 			lua_atpanic(lua_state(), panic);
+#endif
 		}
 
 		void set_exception_handler(exception_handler_function handler) {
@@ -868,6 +891,15 @@ namespace sol {
 		static inline table create_table_with(lua_State* L, Args&&... args) {
 			return global_table::create_with(L, std::forward<Args>(args)...);
 		}
+
+#if SOL_IS_ON(SOL_USE_LUAU)
+		/// Initialize the destructors used by sol.
+		///
+		/// This needs to be called on every state that sol pushes userdata into.
+		void init_userdata_tags() {
+			set_tagged_userdata_dtors(L);
+		}
+#endif
 	};
 } // namespace sol
 

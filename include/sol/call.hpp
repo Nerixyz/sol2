@@ -23,6 +23,9 @@
 
 #pragma once
 
+#include <sol/forward.hpp>
+#include <sol/reference.hpp>
+#include <sol/stack_reference.hpp>
 #ifndef SOL_CALL_HPP
 #define SOL_CALL_HPP
 
@@ -97,7 +100,7 @@ namespace sol {
 
 	namespace function_detail {
 		inline int no_construction_error(lua_State* L) {
-			return luaL_error(L, "sol: cannot call this constructor (tagged as non-constructible)");
+			SOL_RETURN_LUAL_ERROR(L, "sol: cannot call this constructor (tagged as non-constructible)");
 		}
 	} // namespace function_detail
 
@@ -154,7 +157,7 @@ namespace sol {
 		namespace overload_detail {
 			template <std::size_t... M, typename Match, typename... Args>
 			inline int overload_match_arity(types<>, std::index_sequence<>, std::index_sequence<M...>, Match&&, lua_State* L, int, int, Args&&...) {
-				return luaL_error(L, "sol: no matching function call takes this number of arguments and the specified types");
+				SOL_RETURN_LUAL_ERROR(L, "sol: no matching function call takes this number of arguments and the specified types");
 			}
 
 			template <typename Fx, typename... Fxs, std::size_t I, std::size_t... In, std::size_t... M, typename Match, typename... Args>
@@ -396,7 +399,7 @@ namespace sol {
 				else {
 					if constexpr (std::is_const_v<meta::unwrapped_t<T>>) {
 						(void)f;
-						return luaL_error(L, "sol: cannot write to a readonly (const) variable");
+						SOL_RETURN_LUAL_ERROR(L, "sol: cannot write to a readonly (const) variable");
 					}
 					else {
 						using R = meta::unwrapped_t<T>;
@@ -408,7 +411,7 @@ namespace sol {
 							return 0;
 						}
 						else {
-							return luaL_error(L, "sol: cannot write to this variable: copy assignment/constructor not available");
+							SOL_RETURN_LUAL_ERROR(L, "sol: cannot write to this variable: copy assignment/constructor not available");
 						}
 					}
 				}
@@ -441,7 +444,7 @@ namespace sol {
 		template <bool is_index, bool is_variable, bool checked, int boost, bool clean_stack, typename C>
 		struct agnostic_lua_call_wrapper<detail::no_prop, is_index, is_variable, checked, boost, clean_stack, C> {
 			static int call(lua_State* L, const detail::no_prop&) {
-				return luaL_error(L, is_index ? "sol: cannot read from a writeonly property" : "sol: cannot write to a readonly property");
+				SOL_RETURN_LUAL_ERROR(L, is_index ? "sol: cannot read from a writeonly property" : "sol: cannot write to a readonly property");
 			}
 		};
 
@@ -486,7 +489,8 @@ namespace sol {
 						stack::record tracking {};
 						auto maybeo = stack::stack_detail::check_get_arg<Ta*>(L, 1, &no_panic, tracking);
 						if (!maybeo || maybeo.value() == nullptr) {
-							return luaL_error(L,
+							SOL_RETURN_LUAL_ERROR(
+							     L,
 							     "sol: received nil for 'self' argument (use ':' for accessing member functions, make sure member variables are "
 							     "preceeded by the "
 							     "actual object with '.' syntax)");
@@ -521,9 +525,9 @@ namespace sol {
 							auto maybeo = stack::stack_detail::check_get_arg<Ta*>(L, 1, &no_panic, tracking);
 							if (!maybeo || maybeo.value() == nullptr) {
 								if (is_variable) {
-									return luaL_error(L, "sol: 'self' argument is lua_nil (bad '.' access?)");
+									SOL_RETURN_LUAL_ERROR(L, "sol: 'self' argument is lua_nil (bad '.' access?)");
 								}
-								return luaL_error(L, "sol: 'self' argument is lua_nil (pass 'self' as first argument)");
+								SOL_RETURN_LUAL_ERROR(L, "sol: 'self' argument is lua_nil (pass 'self' as first argument)");
 							}
 							object_type* o = static_cast<object_type*>(maybeo.value());
 							return call(L, std::forward<Fx>(fx), *o);
@@ -551,7 +555,7 @@ namespace sol {
 						if constexpr (ret_is_const) {
 							(void)fx;
 							(void)detail::swallow { 0, (static_cast<void>(args), 0)... };
-							return luaL_error(L, "sol: cannot write to a readonly (const) variable");
+							SOL_RETURN_LUAL_ERROR(L, "sol: cannot write to a readonly (const) variable");
 						}
 						else {
 							using u_return_type = meta::unqualified_t<return_type>;
@@ -559,7 +563,7 @@ namespace sol {
 							if constexpr (!is_assignable) {
 								(void)fx;
 								(void)detail::swallow { 0, ((void)args, 0)... };
-								return luaL_error(L, "sol: cannot write to this variable: copy assignment/constructor not available");
+								SOL_RETURN_LUAL_ERROR(L, "sol: cannot write to this variable: copy assignment/constructor not available");
 							}
 							else {
 								using args_list = typename wrap::args_list;
@@ -580,9 +584,9 @@ namespace sol {
 								auto maybeo = stack::stack_detail::check_get_arg<Ta*>(L, 1, &no_panic, tracking);
 									if (!maybeo || maybeo.value() == nullptr) {
 										if (is_variable) {
-											return luaL_error(L, "sol: received nil for 'self' argument (bad '.' access?)");
+											SOL_RETURN_LUAL_ERROR(L, "sol: received nil for 'self' argument (bad '.' access?)");
 										}
-										return luaL_error(L, "sol: received nil for 'self' argument (pass 'self' as first argument)");
+										SOL_RETURN_LUAL_ERROR(L, "sol: received nil for 'self' argument (pass 'self' as first argument)");
 									}
 									object_type* po = static_cast<object_type*>(maybeo.value());
 									object_type& o = *po;
@@ -613,7 +617,7 @@ namespace sol {
 			static int call(lua_State* L, readonly_wrapper<F>&& rw) {
 				if constexpr (!is_index) {
 					(void)rw;
-					return luaL_error(L, "sol: cannot write to a sol::readonly variable");
+					SOL_RETURN_LUAL_ERROR(L, "sol: cannot write to a sol::readonly variable");
 				}
 				else {
 					lua_call_wrapper<T, F, true, is_variable, checked, boost, clean_stack, C> lcw;
@@ -635,7 +639,7 @@ namespace sol {
 			static int call(lua_State* L, const readonly_wrapper<F>& rw) {
 				if constexpr (!is_index) {
 					(void)rw;
-					return luaL_error(L, "sol: cannot write to a sol::readonly variable");
+					SOL_RETURN_LUAL_ERROR(L, "sol: cannot write to a sol::readonly variable");
 				}
 				else {
 					lua_call_wrapper<T, F, true, is_variable, checked, boost, clean_stack, C> lcw;
@@ -819,9 +823,9 @@ namespace sol {
 						auto maybeo = stack::stack_detail::check_get_arg<Ta*>(L, 1, &no_panic, tracking);
 						if (!maybeo || maybeo.value() == nullptr) {
 							if (is_variable) {
-								return luaL_error(L, "sol: 'self' argument is lua_nil (bad '.' access?)");
+								SOL_RETURN_LUAL_ERROR(L, "sol: 'self' argument is lua_nil (bad '.' access?)");
 							}
-							return luaL_error(L, "sol: 'self' argument is lua_nil (pass 'self' as first argument)");
+							SOL_RETURN_LUAL_ERROR(L, "sol: 'self' argument is lua_nil (pass 'self' as first argument)");
 						}
 						Oa* o = static_cast<Oa*>(maybeo.value());
 #else

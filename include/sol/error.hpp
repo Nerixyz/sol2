@@ -55,7 +55,7 @@ namespace sol {
 			if (er.format_string == nullptr) {
 				return er.results;
 			}
-			return luaL_error(L, er.format_string, er.argument_strings[0], er.argument_strings[1], er.argument_strings[2], er.argument_strings[3]);
+			SOL_RETURN_LUAL_ERROR(L, er.format_string, er.argument_strings[0], er.argument_strings[1], er.argument_strings[2], er.argument_strings[3]);
 		}
 
 		class error_exception : public std::runtime_error {

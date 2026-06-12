@@ -25,6 +25,7 @@
 #define SOL_STATE_HPP
 
 #include <sol/compatibility/compat-5.5.h>
+#include <sol/state_handling.hpp>
 #include <sol/state_view.hpp>
 #include <sol/thread.hpp>
 
@@ -35,11 +36,11 @@ namespace sol {
 		typedef std::unique_ptr<lua_State, detail::state_deleter> unique_base;
 
 	public:
-		state(lua_CFunction panic = default_at_panic) : unique_base(luaL_newstate()), state_view(unique_base::get()) {
+		state(PanicHandler panic = default_at_panic) : unique_base(luaL_newstate()), state_view(unique_base::get()) {
 			set_default_state(unique_base::get(), panic);
 		}
 
-		state(lua_CFunction panic, lua_Alloc alfunc, void* alpointer = nullptr)
+		state(PanicHandler panic, lua_Alloc alfunc, void* alpointer = nullptr)
 		: unique_base(sol_detail_lua_newstate(alfunc, alpointer)), state_view(unique_base::get()) {
 			set_default_state(unique_base::get(), panic);
 		}

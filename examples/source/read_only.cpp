@@ -10,7 +10,7 @@ struct object {
 };
 
 int deny(lua_State* L) {
-	return luaL_error(L, "HAH! Deniiiiied!");
+	SOL_RETURN_LUAL_ERROR(L, "HAH! Deniiiiied!");
 }
 
 int main(int, char*[]) {

@@ -331,6 +331,7 @@ namespace sol { namespace stack {
 				}
 				return true;
 			}
+#if SOL_IS_OFF(SOL_USE_LUAU) // FIXME: no LUA_FILEHANDLE
 			else if constexpr (std::is_same_v<T, luaL_Stream*> || std::is_same_v<T, luaL_Stream>) {
 				if (lua_getmetatable(L_, index) == 0) {
 					type t = type_of(L_, index);
@@ -358,6 +359,7 @@ namespace sol { namespace stack {
 				}
 				return true;
 			}
+#endif
 			else if constexpr (meta::is_optional_v<T>) {
 				using ValueType = typename T::value_type;
 				(void)handler;

@@ -204,9 +204,9 @@ TEST_CASE("tables/raw set and raw get", "ensure raw setting and getting works th
 	sol::table t = lua.create_table();
 	t[sol::metatable_key] = lua.create_table_with(
 	     sol::meta_function::new_index,
-	     [](lua_State* L) { return luaL_error(L, "nay"); },
+	     [](lua_State* L) { SOL_RETURN_LUAL_ERROR(L, "nay"); },
 	     sol::meta_function::index,
-	     [](lua_State* L) { return luaL_error(L, "nay"); });
+	     [](lua_State* L) { SOL_RETURN_LUAL_ERROR(L, "nay"); });
 	t.raw_set("a", 2.5);
 	double la = t.raw_get<double>("a");
 	REQUIRE(la == 2.5);

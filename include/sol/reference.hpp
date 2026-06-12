@@ -24,6 +24,7 @@
 #ifndef SOL_REFERENCE_HPP
 #define SOL_REFERENCE_HPP
 
+#include "lua.h"
 #include <sol/types.hpp>
 #include <sol/stack_reference.hpp>
 
@@ -437,7 +438,11 @@ namespace sol {
 		}
 
 		void deref(lua_State* L_) const noexcept {
+#if SOL_IS_ON(SOL_USE_LUAU)
+			lua_unref(L_, ref);
+#else
 			luaL_unref(L_, LUA_REGISTRYINDEX, ref);
+#endif
 		}
 
 		stateless_reference copy(lua_State* L_) const noexcept {

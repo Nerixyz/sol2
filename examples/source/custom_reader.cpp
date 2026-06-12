@@ -52,6 +52,10 @@ const char* custom_reader_function(
 
 int main() {
 	std::cout << "=== custom reader ===" << std::endl;
+#if SOL_IS_ON(SOL_USE_LUAU)
+	std::cout << "Unsupported on luau" << std::endl;
+	return 0;
+#else
 
 	// make a file to use for the custom reader
 	{
@@ -98,4 +102,5 @@ int main() {
 
 	std::cout << std::endl;
 	return 0;
+#endif
 }

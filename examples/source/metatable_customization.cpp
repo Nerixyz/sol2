@@ -43,7 +43,8 @@ void register_thing_type(sol::state& lua) {
 			sol::stack_object source(L, 1);
 			sol::stack_object key(L, 2);
 			if (!source.is<thing>()) {
-				return luaL_error(L,
+				SOL_RETURN_LUAL_ERROR(
+				     L,
 				     "given an incorrect object for this "
 				     "call");
 			}
@@ -102,7 +103,8 @@ void register_thing_type(sol::state& lua) {
 			sol::stack_object key(L, 2);
 			sol::stack_object value(L, 3);
 			if (!source.is<thing>()) {
-				return luaL_error(L,
+				luaL_error(
+				     L,
 				     "given an incorrect object for this "
 				     "call");
 			}
@@ -166,12 +168,14 @@ void unregister_thing_type(sol::state&) {
 }
 
 int main() {
-
 	std::cout << "=== metatable with custom-built (static) "
 	             "handling ==="
 	          << std::endl;
-
-
+#if SOL_IS_ON(SOL_USE_LUAU)
+	std::cout << "Nested metatable lookups are not supported "
+	             "with luau\n";
+	return 0;
+#else
 	sol::state lua;
 	lua.open_libraries(sol::lib::base);
 
@@ -192,4 +196,5 @@ int main() {
 	std::cout << std::endl;
 
 	return 0;
+#endif
 }

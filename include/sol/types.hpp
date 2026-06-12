@@ -687,7 +687,9 @@ namespace sol {
 		handler = LUA_ERRERR,
 		gc = LUA_ERRGCMM,
 		syntax = LUA_ERRSYNTAX,
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		file = LUA_ERRFILE,
+#endif
 	};
 
 	enum class thread_status : int {
@@ -705,7 +707,9 @@ namespace sol {
 		syntax = LUA_ERRSYNTAX,
 		memory = LUA_ERRMEM,
 		gc = LUA_ERRGCMM,
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		file = LUA_ERRFILE,
+#endif
 	};
 
 	enum class gc_mode : int {
@@ -757,8 +761,10 @@ namespace sol {
 			return names[5];
 		case call_status::syntax:
 			return names[6];
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		case call_status::file:
 			return names[7];
+#endif
 		}
 		if (static_cast<std::ptrdiff_t>(c) == -1) {
 			// One of the many cases where a critical exception error has occurred
@@ -776,7 +782,9 @@ namespace sol {
 		case call_status::handler:
 		case call_status::gc:
 		case call_status::syntax:
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		case call_status::file:
+#endif
 			return false;
 		}
 		return true;
@@ -795,8 +803,10 @@ namespace sol {
 			return names[2];
 		case load_status::syntax:
 			return names[3];
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		case load_status::file:
 			return names[4];
+#endif
 		}
 		if (static_cast<int>(c) == -1) {
 			// One of the many cases where a critical exception error has occurred

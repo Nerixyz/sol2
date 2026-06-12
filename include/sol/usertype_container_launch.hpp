@@ -25,8 +25,10 @@
 #define SOL_USERTYPE_CONTAINER_LAUNCH_HPP
 
 #include <sol/stack.hpp>
+#include <sol/stack_core.hpp>
 #include <sol/usertype_container.hpp>
 
+#include <type_traits>
 #include <unordered_map>
 
 namespace sol {
@@ -350,10 +352,18 @@ namespace sol {
 						{ "find", &meta_usertype_container::find_call },
 						{ "index_of", &meta_usertype_container::index_of_call },
 						{ "erase", &meta_usertype_container::erase_call },
+#if SOL_IS_OFF(SOL_USE_LUAU)
 						std::is_pointer<T>::value ? luaL_Reg{ nullptr, nullptr } : luaL_Reg{ "__gc", &detail::usertype_alloc_destroy<T> },
+#endif
 						{ nullptr, nullptr }
 						// clang-format on 
 					} };
+
+#if SOL_IS_ON(SOL_USE_LUAU)
+					if constexpr (std::is_pointer_v<T>) {
+						detail::set_userdata_dtor_at(L, -1, &detail::usertype_alloc_destroy_mem<T>);
+					}
+#endif
 
 					if (luaL_newmetatable(L, metakey) == 1) {
 						luaL_setfuncs(L, reg.data(), 0);

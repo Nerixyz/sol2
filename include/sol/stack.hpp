@@ -308,6 +308,7 @@ namespace sol {
 			return call_syntax::colon;
 		}
 
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		inline void script(
 		     lua_State* L, lua_Reader reader, void* data, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			detail::typical_chunk_name_t basechunkname = {};
@@ -316,6 +317,7 @@ namespace sol {
 				lua_error(L);
 			}
 		}
+#endif
 
 		inline void script(
 		     lua_State* L, const string_view& code, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {

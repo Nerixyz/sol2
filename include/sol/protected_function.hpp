@@ -179,6 +179,7 @@ namespace sol {
 
 		using base_t::lua_state;
 
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		template <typename Fx>
 		int dump(lua_Writer writer, void* userdata_pointer_, bool strip, Fx&& on_error) const {
 			this->push();
@@ -207,6 +208,7 @@ namespace sol {
 			(void)dump(static_cast<lua_Writer>(&basic_insert_dump_writer<Container>), static_cast<void*>(&bc), false, std::forward<Fx>(on_error));
 			return bc;
 		}
+#endif
 
 		template <typename... Args>
 		protected_function_result operator()(Args&&... args) const {

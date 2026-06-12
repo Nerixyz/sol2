@@ -43,9 +43,13 @@
 	#ifndef COMPAT53_INCLUDE_SOURCE
 		#define COMPAT53_INCLUDE_SOURCE 1
 	#endif // Build Compat Layer Inline
+	#ifndef COMPATU_INCLUDE_SOURCE
+		#define COMPATU_INCLUDE_SOURCE 1
+	#endif // Build Compat Layer Inline
 	#include <sol/compatibility/compat-5.3.h>
 	#include <sol/compatibility/compat-5.4.h>
 	#include <sol/compatibility/compat-5.5.h>
+	#include <sol/compatibility/compat-luau.h>
 #endif
 // clang-format on
 

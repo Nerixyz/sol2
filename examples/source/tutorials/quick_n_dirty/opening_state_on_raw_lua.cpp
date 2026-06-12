@@ -16,7 +16,11 @@ int main(int, char*[]) {
 	lua_State* L = luaL_newstate();
 	luaL_openlibs(L);
 
+#if SOL_IS_ON(SOL_USE_LUAU)
+	lua_pushcclosure(L, &use_sol2, "use_sol2", 0);
+#else
 	lua_pushcclosure(L, &use_sol2, 0);
+#endif
 	lua_setglobal(L, "use_sol2");
 
 	if (luaL_dostring(L, "use_sol2()")) {

@@ -202,7 +202,11 @@ namespace sol {
 			lua_pushlstring(L, name.c_str(), name.size());
 			lua_setfield(L, -2, "name");
 			lua_CFunction is_func = &detail::is_check<T>;
+#if SOL_IS_ON(SOL_USE_LUAU)
+			lua_pushcclosure(L, is_func, name.c_str(), 0);
+#else
 			lua_pushcclosure(L, is_func, 0);
+#endif
 			lua_setfield(L, -2, "is");
 			lua_setfield(L, t.stack_index(), to_string(meta_function::type).c_str());
 

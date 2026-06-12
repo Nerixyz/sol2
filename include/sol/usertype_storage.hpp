@@ -24,6 +24,8 @@
 #ifndef SOL_USERTYPE_STORAGE_HPP
 #define SOL_USERTYPE_STORAGE_HPP
 
+#include <sol/demangle.hpp>
+#include <sol/stack_core.hpp>
 #include <sol/usertype_core.hpp>
 #include <sol/make_reference.hpp>
 
@@ -166,7 +168,7 @@ namespace sol { namespace u_detail {
 	}
 
 	inline int new_index_fail(lua_State* L_) {
-		return luaL_error(L_, "sol: cannot set (new_index) into this object: no defined new_index operation on usertype");
+		SOL_RETURN_LUAL_ERROR(L_, "sol: cannot set (new_index) into this object: no defined new_index operation on usertype");
 	}
 
 	inline int new_index_target_fail(lua_State* L_, void*) {
@@ -682,7 +684,11 @@ namespace sol { namespace u_detail {
 			stack::push(L, nullptr);
 			stack::push(L, b.data());
 			lua_CFunction target_func = &b.template call<false, false>;
+#if SOL_IS_ON(SOL_USE_LUAU)
+			lua_pushcclosure(L, target_func, detail::demangle<Binding>().c_str(), 2);
+#else
 			lua_pushcclosure(L, target_func, 2);
+#endif
 			lua_rawset(L, metametatable_index);
 			this->named_index_table.pop(L);
 		}
@@ -827,6 +833,12 @@ namespace sol { namespace u_detail {
 	}
 
 	template <typename T>
+	inline void destroy_usertype_storage_mem(lua_State* L, void* mem) noexcept {
+		clear_usertype_registry_names<T>(L);
+		detail::user_alloc_destroy_mem<usertype_storage<T>>(L, mem);
+	}
+
+	template <typename T>
 	inline int destroy_usertype_storage(lua_State* L) noexcept {
 		clear_usertype_registry_names<T>(L);
 		return detail::user_alloc_destroy<usertype_storage<T>>(L);
@@ -841,6 +853,9 @@ namespace sol { namespace u_detail {
 		int usertype_storage_push_count = stack::push<user<usertype_storage<T>>>(L, no_metatable, L);
 		stack_reference usertype_storage_ref(L, -usertype_storage_push_count);
 
+#if SOL_IS_ON(SOL_USE_LUAU)
+		detail::set_userdata_dtor_at(L, usertype_storage_ref.stack_index(), &destroy_usertype_storage_mem<T>);
+#else
 		// create and push onto the stack a table to use as metatable for this GC
 		// we create a metatable to attach to the regular gc_table
 		// so that the destructor is called for the usertype storage
@@ -852,9 +867,12 @@ namespace sol { namespace u_detail {
 		stack::set_field(L, metatable_key, usertype_storage_metatable, usertype_storage_ref.stack_index());
 		usertype_storage_metatable.pop();
 
+
+#endif
 		// set the usertype storage and its metatable
 		// into the global table...
 		stack::set_field<true>(L, gcmetakey, usertype_storage_ref);
+
 		usertype_storage_ref.pop();
 
 		// then retrieve the lua-stored version so we have a well-pinned
