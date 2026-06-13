@@ -28,6 +28,11 @@
 #include <sol/stack.hpp>
 #include <sol/object.hpp>
 
+#if !defined(__clang__) && defined(_MSC_VER) && _MSC_VER < 1950
+#pragma waring(push)
+#pragma warning(disable : 4702)
+#endif
+
 namespace sol {
 
 	template <typename T>
@@ -1360,15 +1365,7 @@ namespace sol {
 			static int clear(lua_State* L_) {
 				auto& self = get_src(L_);
 				clear_start(L_, self);
-				// MSVC <14.50 warns about unreachable code here. But this code depends on template parameters.
-#if SOL_IS_OFF(SOL_COMPILER_CLANG) && SOL_IS_ON(SOL_COMPILER_VCXX)
-#pragma waring(push)
-#pragma warning(disable : 4702)
-#endif
 				return 0;
-#if SOL_IS_OFF(SOL_COMPILER_CLANG) && SOL_IS_ON(SOL_COMPILER_VCXX)
-#pragma warning(pop)
-#endif
 			}
 
 			static int erase(lua_State* L_) {
@@ -1602,5 +1599,9 @@ namespace sol {
 	struct usertype_container : container_detail::usertype_container_default<T> { };
 
 } // namespace sol
+
+#if SOL_IS_OFF(SOL_COMPILER_CLANG) && SOL_IS_ON(SOL_COMPILER_VCXX)
+#pragma warning(pop)
+#endif
 
 #endif // SOL_USERTYPE_CONTAINER_HPP
