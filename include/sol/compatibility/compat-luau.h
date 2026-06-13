@@ -64,11 +64,11 @@ inline bool is_valid_bytecode(std::string_view data) {
 
 }
 
-#define SOL_RETURN_LUA_ERROR(...) lua_error(__VA_ARGS__);
-#define SOL_RETURN_LUAL_ERROR(...) luaL_error(__VA_ARGS__);
+#define SOL_RETURN_LUA_ERROR(...) lua_error(__VA_ARGS__)
+#define SOL_RETURN_LUAL_ERROR(L, fmt, ...) luaL_errorL(L, fmt, ##__VA_ARGS__)
 #else
-#define SOL_RETURN_LUA_ERROR(...) return lua_error(__VA_ARGS__);
-#define SOL_RETURN_LUAL_ERROR(...) return luaL_error(__VA_ARGS__);
+#define SOL_RETURN_LUA_ERROR(...) return lua_error(__VA_ARGS__)
+#define SOL_RETURN_LUAL_ERROR(...) return luaL_error(__VA_ARGS__)
 #endif
 
 #if defined(COMPATU_INCLUDE_SOURCE) && COMPATU_INCLUDE_SOURCE == 1

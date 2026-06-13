@@ -24,6 +24,7 @@
 #ifndef SOL_USERTYPE_STORAGE_HPP
 #define SOL_USERTYPE_STORAGE_HPP
 
+#include "lua.h"
 #include <sol/demangle.hpp>
 #include <sol/stack_core.hpp>
 #include <sol/usertype_core.hpp>
@@ -834,7 +835,10 @@ namespace sol { namespace u_detail {
 
 	template <typename T>
 	inline void destroy_usertype_storage_mem(lua_State* L, void* mem) noexcept {
+		// In Luau, we can't clear the names when the state is being destroyed.
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		clear_usertype_registry_names<T>(L);
+#endif
 		detail::user_alloc_destroy_mem<usertype_storage<T>>(L, mem);
 	}
 

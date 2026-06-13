@@ -155,7 +155,9 @@ COMPAT53_API int lua_compare(lua_State* L, int idx1, int idx2, int op) {
 	default:
 		luaL_error(L, "invalid 'op' argument for lua_compare");
 	}
+#if SOL_IS_OFF(SOL_USE_LUAU)
 	return 0;
+#endif
 }
 
 
@@ -267,12 +269,11 @@ COMPAT53_API void luaL_setfuncs(lua_State* L, const luaL_Reg* l, int nup) {
 		lua_pushstring(L, l->name);
 		for (i = 0; i < nup; i++) /* copy upvalues to the top */
 			lua_pushvalue(L, -(nup + 1));
-		lua_pushcclosure(L,
-		                 l->func,
 #if SOL_IS_ON(SOL_USE_LUAU)
-		                 l->name,
+		lua_pushcclosure(L, l->func, l->name, nup); /* closure with those upvalues */
+#else
+		lua_pushcclosure(L, l->func, nup); /* closure with those upvalues */
 #endif
-		                 nup);       /* closure with those upvalues */
 		lua_settable(L, -(nup + 3)); /* table must be below the upvalues, the name and the closure */
 	}
 	lua_pop(L, nup); /* remove upvalues */

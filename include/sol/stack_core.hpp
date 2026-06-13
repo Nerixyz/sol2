@@ -80,7 +80,6 @@ namespace sol {
 			memcpy(&dtor, mem, sizeof(dtor));
 			if (dtor) {
 				dtor(L, mem);
-				// dtor(L, static_cast<void*>(reinterpret_cast<void**>(mem) + 1));
 			}
 		}
 
@@ -382,7 +381,9 @@ namespace sol {
 				else {
 					luaL_error(L, "aligned allocation of userdata block (data section) for '%s' failed", detail::demangle<T>().c_str());
 				}
+#if SOL_IS_OFF(SOL_USE_LUAU)
 				return nullptr;
+#endif
 			}
 
 			T** pointerpointer = reinterpret_cast<T**>(pointer_adjusted);
@@ -436,7 +437,9 @@ namespace sol {
 				else {
 					luaL_error(L, "aligned allocation of userdata block (data section) for '%s' failed", detail::demangle<T>().c_str());
 				}
+#if SOL_IS_OFF(SOL_USE_LUAU)
 				return nullptr;
+#endif
 			}
 
 			pref = static_cast<T**>(pointer_adjusted);
