@@ -46,7 +46,15 @@ namespace sol { namespace stack {
 		}
 		if (t != type::userdata) {
 			handler(L_, index, type::table, t, "value is not a table or a userdata that can behave like one");
+			// MSVC <14.50 warns about unreachable code here. But this code depends on template parameters.
+#if SOL_IS_OFF(SOL_COMPILER_CLANG) && SOL_IS_ON(SOL_COMPILER_VCXX)
+#pragma waring(push)
+#pragma warning(disable : 4702)
+#endif
 			return false;
+#if SOL_IS_OFF(SOL_COMPILER_CLANG) && SOL_IS_ON(SOL_COMPILER_VCXX)
+#pragma warning(pop)
+#endif
 		}
 		return true;
 	}
