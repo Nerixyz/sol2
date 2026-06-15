@@ -5,11 +5,6 @@
 
 #if SOL_IS_ON(SOL_USE_LUAU)
 
-#include <string_view>
-#include <Luau/Bytecode.h>
-#include <Luau/Compiler.h>
-
-
 #ifndef COMPATU_PREFIX
 #  define COMPATU_PREFIX kp_compatU
 #endif // COMPATU_PREFIX
