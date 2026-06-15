@@ -34,36 +34,6 @@
 #define luaL_ref COMPATU_CONCAT(COMPATU_PREFIX, L_ref)
 COMPATU_API int luaL_ref(lua_State *L, int t);
 
-namespace sol::detail::compat::luau {
-
-inline bool is_valid_bytecode_version(uint8_t version) {
-    return (version >= LBC_VERSION_MIN && version <= LBC_VERSION_MAX);
-}
-
-inline bool is_valid_bytecode(std::string_view data) {
-    if (data.size() < 3) {
-        return false;
-    }
-    // First byte is the version
-    uint8_t version = data[0];
-    if (!is_valid_bytecode_version(version)) {
-        return false;
-    }
-
-    // version 4 adds type info
-    if (version >= 4) 
-    {
-        uint8_t type_version = data[1];
-        if (type_version < LBC_TYPE_VERSION_MIN || type_version > LBC_TYPE_VERSION_MAX) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-}
-
 #define SOL_RETURN_LUA_ERROR(...) lua_error(__VA_ARGS__)
 #define SOL_RETURN_LUAL_ERROR(L, fmt, ...) luaL_errorL(L, fmt, ##__VA_ARGS__)
 #else

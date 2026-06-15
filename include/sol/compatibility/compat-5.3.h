@@ -155,7 +155,7 @@ COMPAT53_API void lua_len(lua_State *L, int i);
   lua_pushvalue((L), LUA_GLOBALSINDEX)
 #endif
 
-#if !SOL_IS_ON(SOL_USE_LUAU)
+#if SOL_IS_OFF(SOL_USE_LUAU)
 #define lua_rawgetp COMPAT53_CONCAT(COMPAT53_PREFIX, _rawgetp)
 COMPAT53_API int lua_rawgetp(lua_State *L, int i, const void *p);
 
@@ -165,7 +165,7 @@ COMPAT53_API void lua_rawsetp(lua_State *L, int i, const void *p);
 
 #define lua_rawlen(L, i) lua_objlen((L), (i))
 
-#if !SOL_IS_ON(SOL_USE_LUAU)
+#if SOL_IS_OFF(SOL_USE_LUAU)
 #define lua_tointeger(L, i) lua_tointegerx((L), (i), NULL)
 
 #define lua_tonumberx COMPAT53_CONCAT(COMPAT53_PREFIX, _tonumberx)
@@ -199,7 +199,7 @@ COMPAT53_API int luaL_loadfilex(lua_State *L, const char *filename, const char *
 #define luaL_loadbufferx COMPAT53_CONCAT(COMPAT53_PREFIX, L_loadbufferx)
 COMPAT53_API int luaL_loadbufferx(lua_State *L, const char *buff, size_t sz, const char *name, const char *mode);
 
-#if !SOL_IS_ON(SOL_USE_LUAU)
+#if SOL_IS_OFF(SOL_USE_LUAU)
 #define luaL_checkstack COMPAT53_CONCAT(COMPAT53_PREFIX, L_checkstack_53)
 COMPAT53_API void luaL_checkstack(lua_State *L, int sp, const char *msg);
 #endif
@@ -219,7 +219,7 @@ COMPAT53_API void luaL_setmetatable(lua_State *L, const char *tname);
 #define luaL_testudata COMPAT53_CONCAT(COMPAT53_PREFIX, L_testudata)
 COMPAT53_API void *luaL_testudata(lua_State *L, int i, const char *tname);
 
-#if !SOL_IS_ON(SOL_USE_LUAU)
+#if SOL_IS_OFF(SOL_USE_LUAU)
 #define luaL_traceback COMPAT53_CONCAT(COMPAT53_PREFIX, L_traceback)
 COMPAT53_API void luaL_traceback(lua_State *L, lua_State *L1, const char *msg, int level);
 #endif
@@ -235,12 +235,9 @@ COMPAT53_API int luaL_execresult(lua_State *L, int stat);
 #define lua_pcallk(L, na, nr, err, ctx, cont) \
   ((void)(ctx), (void)(cont), lua_pcall((L), (na), (nr), (err)))
 
-#if !SOL_IS_ON(SOL_USE_LUAU)
-#define lua_resume(L, from, nargs) \
-  ((void)(from), lua_resume((L), (nargs)))
-#endif
+#if SOL_IS_OFF(SOL_USE_LUAU)
+#define lua_resume(L, from, nargs) ((void)(from), lua_resume((L), (nargs)))
 
-#if !SOL_IS_ON(SOL_USE_LUAU)
 #define luaL_buffinit COMPAT53_CONCAT(COMPAT53_PREFIX, _buffinit_53)
 COMPAT53_API void luaL_buffinit(lua_State *L, luaL_Buffer_53 *B);
 
@@ -265,7 +262,7 @@ COMPAT53_API void luaL_pushresult(luaL_Buffer_53 *B);
 #define luaL_prepbuffer(B) \
   luaL_prepbuffsize((B), LUAL_BUFFERSIZE)
 
-#if !SOL_IS_ON(SOL_USE_LUAU)
+#if SOL_IS_OFF(SOL_USE_LUAU)
 #undef luaL_addchar
 #define luaL_addchar(B, c) \
   ((void)((B)->nelems < (B)->capacity || luaL_prepbuffsize((B), 1)), \
@@ -276,7 +273,7 @@ COMPAT53_API void luaL_pushresult(luaL_Buffer_53 *B);
 #define luaL_addsize(B, s) \
   ((B)->nelems += (s))
 
-#if !SOL_IS_ON(SOL_USE_LUAU)
+#if SOL_IS_OFF(SOL_USE_LUAU)
 #undef luaL_addstring
 #define luaL_addstring(B, s) \
   luaL_addlstring((B), (s), strlen((s)))
@@ -325,7 +322,7 @@ COMPAT53_API int lua_geti(lua_State *L, int index, lua_Integer i);
 #define lua_isinteger COMPAT53_CONCAT(COMPAT53_PREFIX, _isinteger)
 COMPAT53_API int lua_isinteger(lua_State *L, int index);
 
-#if !SOL_IS_ON(SOL_USE_LUAU)
+#if SOL_IS_OFF(SOL_USE_LUAU)
 #define lua_tointegerx COMPAT53_CONCAT(COMPAT53_PREFIX, _tointegerx_53)
 COMPAT53_API lua_Integer lua_tointegerx(lua_State *L, int i, int *isnum);
 #endif

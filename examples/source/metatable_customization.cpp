@@ -1,3 +1,4 @@
+#include <sol/compatibility/compat-luau.h>
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
@@ -103,7 +104,7 @@ void register_thing_type(sol::state& lua) {
 			sol::stack_object key(L, 2);
 			sol::stack_object value(L, 3);
 			if (!source.is<thing>()) {
-				luaL_error(
+				SOL_RETURN_LUAL_ERROR(
 				     L,
 				     "given an incorrect object for this "
 				     "call");
@@ -172,8 +173,8 @@ int main() {
 	             "handling ==="
 	          << std::endl;
 #if SOL_IS_ON(SOL_USE_LUAU)
-	std::cout << "Nested metatable lookups are not supported "
-	             "with luau\n";
+	std::cout << "Unsupported on luau - this example seems "
+	             "broken on vanilla lua as well\n";
 	return 0;
 #else
 	sol::state lua;

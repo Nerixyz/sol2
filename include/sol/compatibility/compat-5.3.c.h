@@ -1,6 +1,4 @@
-#include "lua.h"
 #include <sol/compatibility/compat-5.3.h>
-#include <sol/compatibility/compat-luau.h>
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -13,7 +11,11 @@
 #ifndef KEPLER_PROJECT_COMPAT53_C_
 #define KEPLER_PROJECT_COMPAT53_C_
 
-
+#if SOL_IS_ON(SOL_USE_LUAU)
+#include <sol/compatibility/compat-luau.h>
+#include <Luau/Bytecode.h>
+#include <Luau/Compiler.h>
+#endif
 
 /* definitions for Lua 5.1 only */
 #if defined(LUA_VERSION_NUM) && LUA_VERSION_NUM == 501
@@ -86,7 +88,7 @@ static char* compat53_strerror(int en, char* buff, size_t sz) {
 }
 
 
-#if !SOL_IS_ON(SOL_USE_LUAU)
+#if SOL_IS_OFF(SOL_USE_LUAU)
 COMPAT53_API int lua_absindex(lua_State* L, int i) {
 	if (i < 0 && i > LUA_REGISTRYINDEX)
 		i += lua_gettop(L) + 1;
@@ -219,7 +221,7 @@ COMPAT53_API void luaL_checkversion(lua_State* L) {
 	(void)L;
 }
 
-#if !SOL_IS_ON(SOL_USE_LUAU)
+#if SOL_IS_OFF(SOL_USE_LUAU)
 COMPAT53_API void luaL_checkstack(lua_State* L, int sp, const char* msg) {
 	if (!lua_checkstack(L, sp + LUA_MINSTACK)) {
 		if (msg != NULL)
@@ -303,7 +305,7 @@ COMPAT53_API void* luaL_testudata(lua_State* L, int i, const char* tname) {
 	return p;
 }
 
-#if !SOL_IS_ON(SOL_USE_LUAU)
+#if SOL_IS_OFF(SOL_USE_LUAU)
 static int compat53_countlevels(lua_State* L) {
 	lua_Debug ar;
 	int li = 1, le = 1;
@@ -439,10 +441,32 @@ static int compat53_checkmode(lua_State* L, const char* mode, const char* modena
 }
 
 #if SOL_IS_ON(SOL_USE_LUAU)
+
+inline bool compat53_is_valid_luau_bytecode(std::string_view data) {
+	if (data.size() < 3) {
+		return false;
+	}
+	// First byte is the version
+	uint8_t version = data[0];
+	if (!(version >= LBC_VERSION_MIN && version <= LBC_VERSION_MAX)) {
+		return false;
+	}
+
+	// version 4 adds type info
+	if (version >= 4) {
+		uint8_t type_version = data[1];
+		if (type_version < LBC_TYPE_VERSION_MIN || type_version > LBC_TYPE_VERSION_MAX) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 COMPAT53_API int lua_load(lua_State* L, const char* data, size_t size, const char* source, const char* mode) {
 	int status = LUA_OK;
 
-	bool is_bytecode = sol::detail::compat::luau::is_valid_bytecode({ data, size });
+	bool is_bytecode = compat53_is_valid_luau_bytecode({ data, size });
 	const char* modename = is_bytecode ? "binary" : "text";
 	status = compat53_checkmode(L, mode, modename, LUA_ERRSYNTAX);
 	if (status != LUA_OK) {
@@ -711,7 +735,7 @@ COMPAT53_API int luaL_loadfilex(lua_State* L, const char* filename, const char* 
 COMPAT53_API int luaL_loadbufferx(lua_State* L, const char* buff, size_t sz, const char* name, const char* mode) {
 	int status = LUA_OK;
 #if SOL_IS_ON(SOL_USE_LUAU)
-	if (sol::detail::compat::luau::is_valid_bytecode({ buff, sz })) {
+	if (compat53_is_valid_luau_bytecode({ buff, sz })) {
 #else
 	if (sz > 0 && buff[0] == LUA_SIGNATURE[0]) {
 #endif

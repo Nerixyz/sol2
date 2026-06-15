@@ -26,7 +26,7 @@ void simple(sol::this_state ts, sol::this_environment te) {
 void complicated(sol::this_state ts) {
 	lua_State* L = ts;
 
-	lua_Debug info { };
+	lua_Debug info;
 	// Level 0 means current function (this C function, which is
 	// useless for our purposes) Level 1 means next call frame
 	// up the stack. This is probably the environment we're
@@ -34,6 +34,7 @@ void complicated(sol::this_state ts) {
 	int level = 1;
 	int pre_stack_size = lua_gettop(L);
 #if SOL_IS_ON(SOL_USE_LUAU)
+	// Luau doesn't require calling lua_getstack() first.
 	if (lua_getinfo(L, level, "fnlus", &info) == 0) {
 		// failure?
 		std::cout << "manually -- error: unable to get stack "

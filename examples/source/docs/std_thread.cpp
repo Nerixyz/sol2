@@ -59,7 +59,8 @@ void worker_thread(worker_data& data) {
 
 int main() {
 #if SOL_IS_ON(SOL_USE_LUAU)
-	std::cout << "Unsupported on luau\n";
+	std::cout << "Unsupported on luau, because luau lacks "
+	             "lua_dump()\n";
 	return 0;
 #else
 	// main lua state

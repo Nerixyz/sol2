@@ -8,7 +8,8 @@ int main() {
 	std::cout << "=== dump (serialize between states) ==="
 	          << std::endl;
 #if SOL_IS_ON(SOL_USE_LUAU)
-	std::cout << "Unsupported on luau\n";
+	std::cout << "Unsupported on luau, because it doesn't have "
+	             "lua_dump()\n";
 	return 0;
 #else
 

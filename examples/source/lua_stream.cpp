@@ -14,7 +14,8 @@ bool is_file_std_out(sol::table data) {
 
 int main() {
 #if SOL_IS_ON(SOL_USE_LUAU)
-	std::cout << "Luau doesn't have io\n";
+	std::cout
+	     << "Unsupported on luau, as luau doesn't have io\n";
 	return 0;
 #else
 	sol::state lua;
