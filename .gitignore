@@ -53,9 +53,11 @@ scratch/
 # CMake
 /.cmake
 build/
+build-*/
 build-sol2/
 CMakeCache.txt
 CMakeFiles/
+CMakeUserPresets.json
 
 # Compiler outputs
 obj/*
