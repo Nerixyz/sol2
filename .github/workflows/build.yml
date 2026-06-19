@@ -66,7 +66,7 @@ jobs:
 
     steps:
       - name: Clone library
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup C++ Compiler
         uses: alandefreitas/cpp-actions/setup-cpp@master
@@ -98,7 +98,7 @@ jobs:
           toolchain: ${{ steps.package-install.outputs.vcpkg_toolchain || steps.package-install.outputs.vcpkg-toolchain }}
           build-type: ${{ matrix.build-type }}
           # prettier-ignore
-          extra-args: "\"-DSOL2_LUA_VERSION=${{ matrix.lua-version }}\" -DSOL2_CI=ON -DSOL2_BUILD_LUA=ON -DBUILD_LUA_AS_DLL=${{ matrix.shared && 'ON' || 'OFF'}} -DSOL2_TESTS=ON -DSOL2_EXAMPLES=ON -DSOL2_TESTS_EXAMPLES=ON"
+          extra-args: "\"-DSOL2_LUA_VERSION=${{ matrix.lua-version }}\" -DSOL2_CI=ON -DSOL2_BUILD_LUA=ON -DBUILD_LUA_AS_DLL=${{ matrix.shared && 'ON' || 'OFF'}} -DSOL2_TESTS=ON -DSOL2_EXAMPLES=${{ case(matrix.coverage || false, 'OFF', 'ON') }} -DSOL2_TESTS_EXAMPLES=ON"
           package: false
           install: false
 
@@ -131,7 +131,7 @@ jobs:
           path: ${{ steps.codecov.outputs.file }}
 
       - name: Codecov Upload
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         if: matrix.coverage
         with:
           fail_ci_if_error: true
