@@ -702,7 +702,7 @@ TEST_CASE("simple/call with parameters", "Lua function is called with a few para
 	REQUIRE_NOTHROW([&]() { fvoid(1, 2, 3); }());
 	REQUIRE_NOTHROW([&]() {
 		int a = f.call<int>(1, 2, 3);
-		REQUIRE(a == 6);
+		REQUIRE((a == 6));
 	}());
 	sol::protected_function pf = f;
 	REQUIRE_NOTHROW([&]() {
@@ -1142,14 +1142,14 @@ TEST_CASE("functions/pointer nullptr + nil", "ensure specific semantics for hand
 			nil_test* v2 = lua["v2"];
 			nil_test* v3 = lua["v3"];
 			nil_test* v4 = lua["v4"];
-			REQUIRE(v1 == sptr.get());
-			REQUIRE(v1 == nullptr);
-			REQUIRE(v2 == uptr.get());
-			REQUIRE(v2 == nullptr);
-			REQUIRE(v3 == rptr);
-			REQUIRE(v3 == nullptr);
-			REQUIRE(v4 == vptr);
-			REQUIRE(v4 == nullptr);
+			REQUIRE((v1 == sptr.get()));
+			REQUIRE((v1 == nullptr));
+			REQUIRE((v2 == uptr.get()));
+			REQUIRE((v2 == nullptr));
+			REQUIRE((v3 == rptr));
+			REQUIRE((v3 == nullptr));
+			REQUIRE((v4 == vptr));
+			REQUIRE((v4 == nullptr));
 		}());
 	}
 	SECTION("ptr") {
