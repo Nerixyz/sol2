@@ -30,7 +30,7 @@ int plop_xyz(int x, int y, std::string z) {
 	return 11;
 }
 
-TEST_CASE("tables/operator[]", "Check if operator[] retrieval and setting works properly") {
+TEST_CASE("tables/operator subscript", "Check if operator subscript retrieval and setting works properly") {
 	sol::state lua;
 	lua.open_libraries(sol::lib::base);
 
