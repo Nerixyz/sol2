@@ -28,6 +28,7 @@
 #include <sol/stack_push.hpp>
 #include <sol/stack_get.hpp>
 #include <sol/stack_check_get.hpp>
+#include <sol/traits.hpp>
 
 namespace sol { namespace stack {
 
@@ -110,15 +111,25 @@ namespace sol { namespace stack {
 				if constexpr (meta::is_c_str_or_string_v<T>) {
 					if constexpr (global) {
 						(void)tableindex;
-						lua_getglobal(L, &key[0]);
+						if constexpr (meta::is_c_str_v<T>) {
+							lua_getglobal(L, key);
+						}
+						else {
+							lua_getglobal(L, std::data(key));
+						}
 					}
 					else {
-						lua_getfield(L, tableindex, &key[0]);
+						if constexpr (meta::is_c_str_v<T>) {
+							lua_getfield(L, tableindex, key);
+						}
+						else {
+							lua_getfield(L, tableindex, std::data(key));
+						}
 					}
 				}
 				else if constexpr (std::is_same_v<T, meta_function>) {
 					const auto& real_key = to_string(key);
-					lua_getfield(L, tableindex, &real_key[0]);
+					lua_getfield(L, tableindex, real_key.c_str());
 				}
 #if SOL_LUA_VERSION_I_ >= 503
 				else if constexpr (std::is_integral_v<T> && !std::is_same_v<bool, T>) {
@@ -215,12 +226,22 @@ namespace sol { namespace stack {
 				if constexpr (meta::is_c_str_or_string_v<T>) {
 					if constexpr (global) {
 						push(L, std::forward<Value>(value));
-						lua_setglobal(L, &key[0]);
+						if constexpr (meta::is_c_str_v<T>) {
+							lua_setglobal(L, key);
+						}
+						else {
+							lua_setglobal(L, std::data(key));
+						}
 						(void)tableindex;
 					}
 					else {
 						push(L, std::forward<Value>(value));
-						lua_setfield(L, tableindex, &key[0]);
+						if constexpr (meta::is_c_str_v<T>) {
+							lua_setfield(L, tableindex, key);
+						}
+						else {
+							lua_setfield(L, tableindex, std::data(key));
+						}
 					}
 				}
 #if SOL_LUA_VERSION_I_ >= 503
