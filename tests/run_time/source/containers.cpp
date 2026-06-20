@@ -263,7 +263,7 @@ struct options {
 	}
 
 	~options() {
-#if SOL_IS_ON(SOL_COMPILER_GCC) && SOL_IS_OFF(SOL_COMPILER_CLANG)
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 12
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdangling-pointer"
 		last = this;
