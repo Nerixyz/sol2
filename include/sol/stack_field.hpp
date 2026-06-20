@@ -111,10 +111,20 @@ namespace sol { namespace stack {
 				if constexpr (meta::is_c_str_or_string_v<T>) {
 					if constexpr (global) {
 						(void)tableindex;
-						lua_getglobal(L, &key[0]);
+						if constexpr (meta::is_c_str_v<T>) {
+							lua_getglobal(L, key);
+						}
+						else {
+							lua_getglobal(L, std::data(key));
+						}
 					}
 					else {
-						lua_getfield(L, tableindex, &key[0]);
+						if constexpr (meta::is_c_str_v<T>) {
+							lua_getfield(L, tableindex, key);
+						}
+						else {
+							lua_getfield(L, tableindex, std::data(key));
+						}
 					}
 				}
 				else if constexpr (std::is_same_v<T, meta_function>) {
