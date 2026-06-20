@@ -263,7 +263,14 @@ struct options {
 	}
 
 	~options() {
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 12
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdangling-pointer"
 		last = this;
+#pragma GCC diagnostic pop
+#else
+		last = this;
+#endif
 		--livingcount;
 	}
 };
@@ -387,8 +394,8 @@ function f_fill(vec)
 end
 function f_append(vec)
 	print("#vec in lua: " .. #vec)
-	vec[issuevec] = -10456407
-	vec[issuevec + 1] = -54
+	vec[#vec] = -10456407
+	vec[#vec + 1] = -54
 	print("#vec in lua: " .. #vec)
 end
 )",

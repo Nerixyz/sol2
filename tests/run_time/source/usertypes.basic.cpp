@@ -291,3 +291,24 @@ TEST_CASE("usertype/const-pointer", "Make sure const pointers can be taken") {
 	REQUIRE(x == 201);
 	std::cout << "----- end of 6" << std::endl;
 }
+
+TEST_CASE("usertype/destructor", "Make sure the destructor is called") {
+	struct IncPtr {
+		void operator()(int* ptr) {
+			++(*ptr);
+		}
+	};
+	using MyPtr = std::unique_ptr<int, IncPtr>;
+
+	int counter = 0;
+	{
+		sol::state lua;
+		lua.new_usertype<MyPtr>("MyPtr", sol::no_constructor);
+		lua.set("v", MyPtr(&counter));
+		REQUIRE(counter == 0);
+		lua.set("v", nullptr);
+		lua.collect_garbage();
+		REQUIRE(counter == 1);
+	}
+	REQUIRE(counter == 1);
+}
