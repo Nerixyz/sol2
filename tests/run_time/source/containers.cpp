@@ -263,7 +263,14 @@ struct options {
 	}
 
 	~options() {
+#if SOL_IS_ON(SOL_COMPILER_GCC) && SOL_IS_ON(SOL_COMPILER_CLANG)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdangling-pointer"
 		last = this;
+#pragma GCC diagnostic pop
+#else
+		last = this;
+#endif
 		--livingcount;
 	}
 };
