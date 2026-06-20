@@ -170,7 +170,14 @@ namespace sol {
 
 	struct absolute_index {
 		int index;
-		absolute_index(lua_State* L, int idx) : index(lua_absindex(L, idx)) {
+		absolute_index(lua_State* L, int idx)
+		:
+#if SOL_IS_ON(SOL_USE_LUAU)
+		     index(idx > 0 ? idx : lua_absindex(L, idx))
+#else
+		     index(lua_absindex(L, idx))
+#endif
+		{
 		}
 
 		operator int() const {
@@ -846,7 +853,9 @@ namespace sol {
 		equal_to,
 		less_than,
 		less_than_or_equal_to,
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		garbage_collect,
+#endif
 		floor_division,
 		bitwise_left_shift,
 		bitwise_right_shift,
@@ -870,45 +879,47 @@ namespace sol {
 
 	inline const std::array<std::string, 37>& meta_function_names() {
 		static const std::array<std::string, 37> names = { { "new",
-			"__index",
-			"__newindex",
-			"__mode",
-			"__call",
-			"__metatable",
-			"__tostring",
-			"__len",
-			"__unm",
-			"__add",
-			"__sub",
-			"__mul",
-			"__div",
-			"__mod",
-			"__pow",
-			"__concat",
-			"__eq",
-			"__lt",
-			"__le",
-			"__gc",
+			                                                "__index",
+			                                                "__newindex",
+			                                                "__mode",
+			                                                "__call",
+			                                                "__metatable",
+			                                                "__tostring",
+			                                                "__len",
+			                                                "__unm",
+			                                                "__add",
+			                                                "__sub",
+			                                                "__mul",
+			                                                "__div",
+			                                                "__mod",
+			                                                "__pow",
+			                                                "__concat",
+			                                                "__eq",
+			                                                "__lt",
+			                                                "__le",
+#if SOL_IS_OFF(SOL_USE_LUAU)
+			                                                "__gc",
+#endif
 
-			"__idiv",
-			"__shl",
-			"__shr",
-			"__bnot",
-			"__band",
-			"__bor",
-			"__bxor",
+			                                                "__idiv",
+			                                                "__shl",
+			                                                "__shr",
+			                                                "__bnot",
+			                                                "__band",
+			                                                "__bor",
+			                                                "__bxor",
 
-			"__pairs",
-			"__ipairs",
-			"next",
+			                                                "__pairs",
+			                                                "__ipairs",
+			                                                "next",
 
-			"__type",
-			"__typeinfo",
-			"__sol.call_new",
-			"__sol.storage",
-			"__sol.gc_names",
-			"__sol.static_index",
-			"__sol.static_new_index" } };
+			                                                "__type",
+			                                                "__typeinfo",
+			                                                "__sol.call_new",
+			                                                "__sol.storage",
+			                                                "__sol.gc_names",
+			                                                "__sol.static_index",
+			                                                "__sol.static_new_index" } };
 		return names;
 	}
 

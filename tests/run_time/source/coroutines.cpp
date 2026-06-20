@@ -226,6 +226,9 @@ TEST_CASE("coroutines/transfer", "test that things created inside of a coroutine
 	for (std::size_t tries = 0; tries < 200; ++tries) {
 		sol::state lua;
 		sol::stack_guard luasg(lua);
+#if SOL_IS_ON(SOL_USE_LUAU)
+		lua["collectgarbage"] = [](sol::this_state L) { lua_gc(L.lua_state(), LUA_GCCOLLECT, 0); };
+#endif
 
 		lua.open_libraries();
 		{
@@ -312,6 +315,9 @@ co = nil
 
 	sol::state lua;
 	lua.open_libraries(sol::lib::coroutine, sol::lib::base);
+#if SOL_IS_ON(SOL_USE_LUAU)
+	lua["collectgarbage"] = [](sol::this_state L) { lua_gc(L.lua_state(), LUA_GCCOLLECT, 0); };
+#endif
 
 	lua.new_usertype<coro_test>("coro_test",
 	     sol::constructors<coro_test(sol::this_state, std::string)>(),
@@ -398,6 +404,9 @@ co = nil
 
 	sol::state lua;
 	lua.open_libraries(sol::lib::coroutine, sol::lib::base);
+#if SOL_IS_ON(SOL_USE_LUAU)
+	lua["collectgarbage"] = [](sol::this_state L) { lua_gc(L.lua_state(), LUA_GCCOLLECT, 0); };
+#endif
 
 	lua.new_usertype<coro_test_implicit>("coro_test",
 	     sol::constructors<coro_test_implicit(sol::this_state, std::string)>(),
@@ -458,6 +467,9 @@ collectgarbage()
 
 	sol::state lua;
 	lua.open_libraries(sol::lib::coroutine, sol::lib::base);
+#if SOL_IS_ON(SOL_USE_LUAU)
+	lua["collectgarbage"] = [](sol::this_state L) { lua_gc(L.lua_state(), LUA_GCCOLLECT, 0); };
+#endif
 
 	lua.new_usertype<coro_test_implicit>("coro_test",
 	     sol::constructors<coro_test_implicit(sol::this_state, std::string)>(),

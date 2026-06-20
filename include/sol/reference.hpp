@@ -55,7 +55,11 @@ namespace sol {
 			// Remove each item one at a time using stack operations
 			// Probably slower, maybe, haven't benchmarked,
 			// but necessary
+#if SOL_IS_ON(SOL_USE_LUAU)
+			int index = rawindex > 0 ? rawindex : lua_absindex(L_, rawindex);
+#else
 			int index = lua_absindex(L_, rawindex);
+#endif
 			if (index < 0) {
 				index = lua_gettop(L_) + (index + 1);
 			}

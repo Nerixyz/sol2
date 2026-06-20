@@ -333,9 +333,13 @@ namespace sol {
 					static const char* metakey
 					     = is_shim ? &usertype_traits<as_container_t<std::remove_pointer_t<T>>>::metatable()[0] : &usertype_traits<T>::metatable()[0];
 					static const std::array<luaL_Reg, 20> reg = { {
-						// clang-format off
+					// clang-format off
+#if SOL_IS_ON(SOL_USE_LUAU)
+						{ "__iter", &meta_usertype_container::pairs_call },
+#else
 						{ "__pairs", &meta_usertype_container::pairs_call },
 						{ "__ipairs", &meta_usertype_container::ipairs_call },
+#endif
 						{ "__len", &meta_usertype_container::length_call },
 						{ "__index", &meta_usertype_container::index_call },
 						{ "__newindex", &meta_usertype_container::new_index_call },

@@ -172,7 +172,13 @@ namespace sol { namespace stack {
 		template <typename K, typename... Args>
 		static int push_keyed(lua_State* L, K&& k, Args&&... args) {
 			stack_detail::undefined_metatable fx(L, &k[0], &stack::stack_detail::set_undefined_methods_on<T>);
-			return push_fx(L, fx, std::forward<Args>(args)...);
+			int n = push_fx(L, fx, std::forward<Args>(args)...);
+#if SOL_IS_ON(SOL_USE_LUAU)
+			if constexpr (!std::is_pointer_v<T>) {
+				detail::set_userdata_dtor_at(L, -1, detail::make_destructor_mem<T>());
+			}
+#endif
+			return n;
 		}
 
 		template <typename Arg, typename... Args>
@@ -211,7 +217,9 @@ namespace sol { namespace stack {
 		template <typename K>
 		static int push_keyed(lua_State* L, K&& k, T* obj) {
 			stack_detail::undefined_metatable fx(L, &k[0], &stack::stack_detail::set_undefined_methods_on<U*>);
-			return push_fx(L, fx, obj);
+			int n = push_fx(L, fx, obj);
+			// Luau: Don't need to set destructor - type is a pointer.
+			return n;
 		}
 
 		template <typename Arg, typename... Args>
@@ -262,12 +270,17 @@ namespace sol { namespace stack {
 				detail::unique_destructor* fx = nullptr;
 				detail::unique_tag* id = nullptr;
 				actual* typed_memory = detail::usertype_unique_allocate<element, actual>(L, pointer_to_memory, fx, id);
+#if SOL_IS_ON(SOL_USE_LUAU)
+				detail::set_userdata_dtor_at(L, -1, detail::make_destructor_mem<T>());
+#endif
 				if (luaL_newmetatable(L, &usertype_traits<d::u<std::remove_cv_t<element>>>::metatable()[0]) == 1) {
 					detail::lua_reg_table registration_table {};
 					int index = 0;
 					detail::indexed_insert insert_callable(registration_table, index);
 					detail::insert_default_registrations<element>(insert_callable, detail::property_always_true);
+#if SOL_IS_OFF(SOL_USE_LUAU)
 					registration_table[index] = { to_string(meta_function::garbage_collect).c_str(), detail::make_destructor<T>() };
+#endif
 					luaL_setfuncs(L, registration_table, 0);
 				}
 				lua_setmetatable(L, -2);

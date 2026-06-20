@@ -23,9 +23,6 @@
 
 #pragma once
 
-#include <sol/forward.hpp>
-#include <sol/reference.hpp>
-#include <sol/stack_reference.hpp>
 #ifndef SOL_CALL_HPP
 #define SOL_CALL_HPP
 
@@ -341,6 +338,11 @@ namespace sol {
 			construct_match<T, TypeLists...>(constructor_match<T, checked, clean_stack>(obj, userdataref, umf), L, argcount, 1 + static_cast<int>(syntax));
 
 			userdataref.push();
+#if SOL_IS_ON(SOL_USE_LUAU)
+			if constexpr (!std::is_pointer_v<T>) {
+				detail::set_userdata_dtor_at(L, -1, detail::make_destructor_mem<T>());
+			}
+#endif
 			return 1;
 		}
 
@@ -683,6 +685,11 @@ namespace sol {
 				     constructor_match<T, checked, clean_stack>(obj, userdataref, umf), L, argcount, boost + 1 + 1 + static_cast<int>(syntax));
 
 				userdataref.push();
+#if SOL_IS_ON(SOL_USE_LUAU)
+				if constexpr (!std::is_pointer_v<T>) {
+					detail::set_userdata_dtor_at(L, -1, detail::make_destructor_mem<T>());
+				}
+#endif
 				return 1;
 			}
 		};
@@ -706,6 +713,11 @@ namespace sol {
 					stack::call_into_lua<checked, clean_stack>(r, a, L, boost + 1 + start, func, detail::implicit_wrapper<T>(obj));
 
 					userdataref.push();
+#if SOL_IS_ON(SOL_USE_LUAU)
+					if constexpr (!std::is_pointer_v<T>) {
+						detail::set_userdata_dtor_at(L, -1, detail::make_destructor_mem<T>());
+					}
+#endif
 					return 1;
 				}
 			};

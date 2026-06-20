@@ -497,12 +497,17 @@ namespace sol {
 		}
 
 		template <typename T>
-		int unique_destroy(lua_State* L) noexcept {
-			void* memory = lua_touserdata(L, 1);
+		void unique_destroy_mem(lua_State* L, void* memory) noexcept {
 			memory = align_usertype_unique_destructor(memory);
 			unique_destructor& dx = *static_cast<unique_destructor*>(memory);
 			memory = align_usertype_unique_tag<true>(memory);
 			(dx)(memory);
+		}
+
+		template <typename T>
+		int unique_destroy(lua_State* L) noexcept {
+			void* memory = lua_touserdata(L, 1);
+			unique_destroy_mem<T>(L, memory);
 			return 0;
 		}
 
@@ -530,13 +535,21 @@ namespace sol {
 		}
 
 		template <typename T>
-		int cannot_destroy(lua_State* L) {
-			SOL_RETURN_LUAL_ERROR(L,
-			                      "cannot call the destructor for '%s': it is either hidden (protected/private) or removed with '= "
-			                      "delete' and thusly this type is being destroyed without properly destroying, invoking undefined "
-			                      "behavior: please bind a usertype and specify a custom destructor to define the behavior properly",
-			                      detail::demangle<T>().data());
+		void cannot_destroy_mem(lua_State* L, void* memory) {
+			luaL_error(L,
+			           "cannot call the destructor for '%s': it is either hidden (protected/private) or removed with '= "
+			           "delete' and thusly this type is being destroyed without properly destroying, invoking undefined "
+			           "behavior: please bind a usertype and specify a custom destructor to define the behavior properly",
+			           detail::demangle<T>().data());
 		}
+
+
+		template <typename T>
+		int cannot_destroy(lua_State* L) {
+			cannot_destroy_mem<T>(L, nullptr);
+			return 0;
+		}
+
 
 		template <typename T>
 		void reserve(T&, std::size_t) {
@@ -1382,6 +1395,31 @@ namespace sol {
 		lua_CFunction make_destructor() {
 			return make_destructor<T>(std::is_destructible<T>());
 		}
+
+#if SOL_IS_ON(SOL_USE_LUAU)
+		template <typename T>
+		lua_Destructor make_destructor_mem(std::true_type) {
+			if constexpr (is_unique_usertype_v<T>) {
+				return &unique_destroy_mem<T>;
+			}
+			else if constexpr (!std::is_pointer_v<T>) {
+				return &usertype_alloc_destroy_mem<T>;
+			}
+			else {
+				return &cannot_destroy_mem<T>;
+			}
+		}
+
+		template <typename T>
+		lua_Destructor make_destructor_mem(std::false_type) {
+			return &cannot_destroy_mem<T>;
+		}
+
+		template <typename T>
+		lua_Destructor make_destructor_mem() {
+			return make_destructor_mem<T>(std::is_destructible<T>());
+		}
+#endif
 
 		struct no_comp {
 			template <typename A, typename B>

@@ -175,6 +175,7 @@ bool sol_lua_check(sol::types<super_custom*>, lua_State* L, int index, Handler&&
 	return sol_lua_check(sol::types<super_custom>(), L, index, std::forward<Handler>(handler), tracking);
 }
 
+#if SOL_IS_OFF(SOL_USE_LUAU)
 int sol_lua_push(lua_State* L, const super_custom& c) {
 	++super_custom::push_calls;
 	// ensure there's enough space for 1 more thing on the stack
@@ -193,6 +194,7 @@ int sol_lua_push(lua_State* L, const super_custom& c) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
+#endif
 
 int sol_lua_push(lua_State* L, super_custom* c) {
 	++super_custom::pointer_push_calls;
@@ -254,6 +256,8 @@ TEST_CASE("customization/adl", "using the ADL customization points in various si
 		REQUIRE(multi_custom::check_get_calls == 0);
 		REQUIRE(multi_custom::exact_push_calls == 0);
 	}
+	// Bad destructor
+#if SOL_IS_OFF(SOL_USE_LUAU)
 	SECTION("reference-based") {
 		super_custom::get_calls = 0;
 		super_custom::check_calls = 0;
@@ -281,4 +285,5 @@ TEST_CASE("customization/adl", "using the ADL customization points in various si
 		REQUIRE(super_custom::pointer_push_calls > 0);
 		REQUIRE(super_custom::exact_push_calls > 0);
 	}
+#endif
 }

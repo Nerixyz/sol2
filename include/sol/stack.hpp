@@ -302,7 +302,7 @@ namespace sol {
 			}
 			luaL_getmetatable(L, key.data());
 			auto pn = pop_n(L, 1);
-			if (lua_compare(L, -1, index, LUA_OPEQ) != 1) {
+			if (lua_rawequal(L, -1, index) != 1) {
 				return call_syntax::dot;
 			}
 			return call_syntax::colon;

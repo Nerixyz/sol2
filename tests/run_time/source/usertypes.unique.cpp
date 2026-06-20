@@ -171,6 +171,8 @@ TEST_CASE("usertype/unique-shared-ptr", "manage the conversion and use of unique
 	std::cout << "----- end of 2" << std::endl;
 }
 
+// Can't overwrite __gc.
+#if SOL_IS_OFF(SOL_USE_LUAU)
 TEST_CASE("usertype/private-constructible", "Check to make sure special snowflake types from Enterprise thingamahjongs work properly.") {
 	int numsaved = factory_test::num_saved;
 	int numkilled = factory_test::num_killed;
@@ -200,6 +202,7 @@ TEST_CASE("usertype/private-constructible", "Check to make sure special snowflak
 	REQUIRE(expectednumkilled == factory_test::num_killed);
 	std::cout << "----- end of 5" << std::endl;
 }
+#endif
 
 TEST_CASE("usertype/unique_usertype-check", "make sure unique usertypes don't get pushed as references with function calls and the like") {
 	class Entity {

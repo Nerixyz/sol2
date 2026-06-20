@@ -49,9 +49,23 @@ namespace sol {
 		typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
 		variadic_args() = default;
-		variadic_args(lua_State* luastate, int stackindex = -1) : L(luastate), index(lua_absindex(luastate, stackindex)), stacktop(lua_gettop(luastate)) {
+		variadic_args(lua_State* luastate, int stackindex = -1)
+		: L(luastate)
+#if SOL_IS_ON(SOL_USE_LUAU)
+		, index(stackindex > 0 ? stackindex : lua_absindex(luastate, stackindex))
+#else
+		, index(lua_absindex(luastate, stackindex))
+#endif
+		, stacktop(lua_gettop(luastate)) {
 		}
-		variadic_args(lua_State* luastate, int stackindex, int lastindex) : L(luastate), index(lua_absindex(luastate, stackindex)), stacktop(lastindex) {
+		variadic_args(lua_State* luastate, int stackindex, int lastindex)
+		: L(luastate)
+#if SOL_IS_ON(SOL_USE_LUAU)
+		, index(stackindex > 0 ? stackindex : lua_absindex(luastate, stackindex))
+#else
+		, index(lua_absindex(luastate, stackindex))
+#endif
+		, stacktop(lastindex) {
 		}
 		variadic_args(const variadic_args&) = default;
 		variadic_args& operator=(const variadic_args&) = default;

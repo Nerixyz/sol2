@@ -10,10 +10,18 @@ private:
 	}
 	holy(int value) : data(value) {
 	}
+// Can't customize __gc on luau.
+#if SOL_IS_ON(SOL_USE_LUAU)
+public:
+	~holy() {
+	}
+
+#else
 	~holy() {
 	}
 
 public:
+#endif
 	struct deleter {
 		void operator()(holy* p) const {
 			destroy(*p);
@@ -54,13 +62,16 @@ int main() {
 		sol::state lua;
 		lua.open_libraries();
 
-		lua.new_usertype<holy>("holy",
+		lua.new_usertype<holy>(
+		     "holy",
 		     "new",
 		     sol::initializers(&holy::initialize),
 		     "create",
 		     sol::factories(&holy::create),
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		     sol::meta_function::garbage_collect,
 		     sol::destructor(&holy::destroy),
+#endif
 		     "data",
 		     &holy::data);
 

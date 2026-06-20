@@ -301,11 +301,14 @@ TEST_CASE("usertype/coverage", "try all the things") {
 	sol::state lua;
 	lua.open_libraries(sol::lib::base);
 
-	lua.new_usertype<ext_getset>("ext_getset",
+	lua.new_usertype<ext_getset>(
+	     "ext_getset",
 	     sol::call_constructor,
 	     sol::constructors<sol::types<>, sol::types<int>>(),
+#if SOL_IS_OFF(SOL_USE_LUAU)
 	     sol::meta_function::garbage_collect,
 	     sol::destructor(des<ext_getset>),
+#endif
 	     "x",
 	     sol::overload(&ext_getset::x, &ext_getset::x2, [](ext_getset& m, std::string x, int y) { return m.meow + 50 + y + static_cast<int>(x.length()); }),
 	     "bark",

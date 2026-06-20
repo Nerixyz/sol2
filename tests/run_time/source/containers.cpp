@@ -558,6 +558,10 @@ TEST_CASE("containers/pointer types", "check that containers with unique usertyp
 TEST_CASE("containers/keep alive", "containers are kept alive even if they are returned as a temporary") {
 	sol::state lua;
 	lua.open_libraries(sol::lib::base, sol::lib::table);
+#if SOL_IS_ON(SOL_USE_LUAU)
+	lua["collectgarbage"] = [](sol::this_state L) { lua_gc(L.lua_state(), LUA_GCCOLLECT, 0); };
+#endif
+
 
 #define PATTERN() 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
 	lua["get_collection"] = []() {
@@ -595,7 +599,23 @@ TEST_CASE("containers/keep alive", "containers are kept alive even if they are r
 	};
 #undef PATTERN
 
-	sol::optional<sol::error> maybe_error = lua.safe_script(R"lua(
+	sol::optional<sol::error> maybe_error = lua.safe_script(
+#if SOL_IS_ON(SOL_USE_LUAU)
+	     R"lua(
+print("LET'S GET IT BAYBEEE!")
+for i, v in get_collection() do
+	collectgarbage()
+	collectgarbage()
+	local index = i - 1
+	print(i, index, (index % 10), v)
+	assert((index % 10) == v)
+end
+collectgarbage()
+collectgarbage()
+print("YEEEAH!")
+)lua"
+#else
+	     R"lua(
 print("LET'S GET IT BAYBEEE!")
 for i, v in pairs(get_collection()) do
 	collectgarbage()
@@ -607,6 +627,8 @@ end
 collectgarbage()
 collectgarbage()
 print("YEEEAH!")
-)lua");
+)lua"
+#endif
+	);
 	REQUIRE_FALSE(maybe_error.has_value());
 }

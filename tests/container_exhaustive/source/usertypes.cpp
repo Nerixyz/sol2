@@ -39,6 +39,16 @@ TEST_CASE("array") {
         assert(a:get(4) == 4)
         assert(a:get(5) == nil)
 
+    )"
+#if SOL_IS_ON(SOL_USE_LUAU)
+	                                                   R"(
+        -- __iter
+        for k, v in a do
+            assert(k == v)
+        end
+    )"
+#else
+	                                                   R"(
         -- __pairs
         for k, v in pairs(a) do
             assert(k == v)
@@ -47,6 +57,9 @@ TEST_CASE("array") {
         for k, v in ipairs(a) do
             assert(k == v)
         end
+    )"
+#endif
+	                                                   R"(
         -- pairs()
         for k, v in a:pairs() do
             assert(k == v)
@@ -122,6 +135,16 @@ TEST_CASE("vector") {
         assert(a:get(4) == 4)
         assert(a:get(5) == nil)
 
+    )"
+#if SOL_IS_ON(SOL_USE_LUAU)
+	                                                   R"(
+        -- __iter
+        for k, v in a do
+            assert(k == v)
+        end
+    )"
+#else
+	                                                   R"(
         -- __pairs
         for k, v in pairs(a) do
             assert(k == v)
@@ -130,6 +153,9 @@ TEST_CASE("vector") {
         for k, v in ipairs(a) do
             assert(k == v)
         end
+    )"
+#endif
+	                                                   R"(
         -- pairs()
         for k, v in a:pairs() do
             assert(k == v)
@@ -207,7 +233,19 @@ TEST_CASE("map") {
         assert(a:get("foo") == 1)
         assert(a:get("baz") == 3)
         assert(a:get("bbb") == nil)
-
+    )"
+#if SOL_IS_ON(SOL_USE_LUAU)
+	                                                   R"(
+        -- __iter
+        local order = ""
+        for k, v in a do
+            assert(({foo=1,bar=2,baz=3})[k] == v)
+            order = order .. k .. ","
+        end
+        assert(order == "bar,baz,foo,")
+    )"
+#else
+	                                                   R"(
         -- __pairs
         local order = ""
         for k, v in pairs(a) do
@@ -216,6 +254,9 @@ TEST_CASE("map") {
         end
         assert(order == "bar,baz,foo,")
         -- __ipairs (not supported since 5.4)
+    )"
+#endif
+	                                                   R"(
         -- pairs()
         for k, v in a:pairs() do
             assert(({foo=1,bar=2,baz=3})[k] == v)
@@ -290,11 +331,24 @@ TEST_CASE("unordered_map") {
         assert(a:get("baz") == 3)
         assert(a:get("bbb") == nil)
 
+    )"
+#if SOL_IS_ON(SOL_USE_LUAU)
+	                                                   R"(
+        -- __iter
+        for k, v in a do
+            assert(({foo=1,bar=2,baz=3})[k] == v)
+        end
+    )"
+#else
+	                                                   R"(
         -- __pairs
         for k, v in pairs(a) do
             assert(({foo=1,bar=2,baz=3})[k] == v)
         end
         -- __ipairs (not supported since 5.4)
+    )"
+#endif
+	                                                   R"(
         -- pairs()
         for k, v in a:pairs() do
             assert(({foo=1,bar=2,baz=3})[k] == v)

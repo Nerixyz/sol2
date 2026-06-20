@@ -593,6 +593,8 @@ TEST_CASE("gc/alignment", "test that allocation is always on aligned boundaries,
 	}
 }
 
+// No custom destructors.
+#if SOL_IS_OFF(SOL_USE_LUAU)
 TEST_CASE("gc/multi-argument destructors", "make sure transparent arguments come along for the ride") {
 	static int transparent_foos_destroyed = 0;
 
@@ -618,3 +620,4 @@ TEST_CASE("gc/multi-argument destructors", "make sure transparent arguments come
 	REQUIRE(transparent_foos_destroyed == 1);
 	REQUIRE(call_state == lua_state);
 }
+#endif

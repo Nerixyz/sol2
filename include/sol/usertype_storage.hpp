@@ -177,7 +177,9 @@ namespace sol { namespace u_detail {
 	}
 
 	struct string_for_each_metatable_func {
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		bool is_destruction = false;
+#endif
 		bool is_index = false;
 		bool is_new_index = false;
 		bool is_static_index = false;
@@ -211,6 +213,7 @@ namespace sol { namespace u_detail {
 			if (poison_indexing) {
 				(usb.*change_indexing)(L_, smt_, p_derived_usb, t, idx_call, new_idx_call, meta_idx_call, meta_new_idx_call);
 			}
+#if SOL_IS_OFF(SOL_USE_LUAU)
 			if (is_destruction
 				&& (smt_ == submetatable_type::reference || smt_ == submetatable_type::const_reference || smt_ == submetatable_type::named
 				     || smt_ == submetatable_type::unique)) {
@@ -221,6 +224,7 @@ namespace sol { namespace u_detail {
 				t.pop(L_);
 				return;
 			}
+#endif
 			if (is_index || is_new_index || is_static_index || is_static_new_index) {
 				// do not serialize the new_index and index functions here directly
 				// we control those...
@@ -720,7 +724,9 @@ namespace sol { namespace u_detail {
 			bool is_new_index = (s == to_string(meta_function::new_index));
 			bool is_static_index = (s == to_string(meta_function::static_index));
 			bool is_static_new_index = (s == to_string(meta_function::static_new_index));
+#if SOL_IS_OFF(SOL_USE_LUAU)
 			bool is_destruction = s == to_string(meta_function::garbage_collect);
+#endif
 			bool poison_indexing = (!is_using_index || !is_using_new_index) && (is_var_bind::value || is_index || is_new_index);
 			void* derived_this = static_cast<void*>(static_cast<usertype_storage<T>*>(this));
 			index_call_storage ics;
@@ -731,7 +737,9 @@ namespace sol { namespace u_detail {
 				                                               : &Binding::template index_call_with_<false, is_var_bind::value>;
 
 			string_for_each_metatable_func for_each_fx;
+#if SOL_IS_OFF(SOL_USE_LUAU)
 			for_each_fx.is_destruction = is_destruction;
+#endif
 			for_each_fx.is_index = is_index;
 			for_each_fx.is_new_index = is_new_index;
 			for_each_fx.is_static_index = is_static_index;
@@ -1085,6 +1093,7 @@ namespace sol { namespace u_detail {
 			stateless_stack_reference t(L_, -1);
 			fast_index_table_.reset(L_, t.stack_index());
 			stack::set_field<false, true>(L_, meta_function::type, storage.type_table, t.stack_index());
+#if SOL_IS_OFF(SOL_USE_LUAU)
 			// destructible? serialize default destructor here
 			// otherwise, not destructible: serialize a "hey you messed up"
 			switch (smt_) {
@@ -1111,6 +1120,7 @@ namespace sol { namespace u_detail {
 				}
 				break;
 			}
+#endif
 
 			static_assert(sizeof(void*) <= sizeof(detail::inheritance_check_function),
 				"The size of this data pointer is too small to fit the inheritance checking function: file a bug "
