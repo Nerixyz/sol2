@@ -33,9 +33,14 @@ set(LUAU_WERROR OFF CACHE BOOL "Warnings as errors")
 set(LUAU_STATIC_CRT OFF CACHE BOOL "Link with the static CRT (/MT)")
 set(LUAU_EXTERN_C ON CACHE BOOL "Use extern C for all APIs")
 
+if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.28.0")
+    set(luau_fc_flags "EXCLUDE_FROM_ALL")
+endif()
+
 FetchContent_Declare(
     luau
     URL https://github.com/luau-lang/luau/archive/refs/tags/${LUAU_VERSION}.tar.gz
+    ${luau_fc_flags}
 )
 FetchContent_MakeAvailable(luau)
 
