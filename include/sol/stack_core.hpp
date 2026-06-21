@@ -535,7 +535,7 @@ namespace sol {
 		}
 
 		template <typename T>
-		void cannot_destroy_mem(lua_State* L, void* memory) {
+		void cannot_destroy_mem(lua_State* L, void* /* memory */) {
 			luaL_error(L,
 			           "cannot call the destructor for '%s': it is either hidden (protected/private) or removed with '= "
 			           "delete' and thusly this type is being destroyed without properly destroying, invoking undefined "

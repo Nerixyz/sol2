@@ -88,17 +88,8 @@ TEST_CASE("plain/indestructible", "test that we error for types that are innatel
 	__lsan::ScopedDisabler guard;
 #endif
 
-#if SOL_IS_ON(SOL_USE_LUAU)
-	SECTION("doomed") {
-		REQUIRE_THROWS([&] {
-			sol::state lua;
-			lua.open_libraries(sol::lib::base);
-
-			std::unique_ptr<indestructible, indestructible::insider> i = sol::detail::make_unique_deleter<indestructible, indestructible::insider>();
-			lua["i"] = *i;
-		}());
-	}
-#else
+	// On Luau, this generates an error when the state is destroyed. We can't catch that error.
+#if SOL_IS_OFF(SOL_USE_LUAU)
 	SECTION("doomed") {
 		sol::state lua;
 		lua.open_libraries(sol::lib::base);
