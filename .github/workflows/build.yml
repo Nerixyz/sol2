@@ -37,7 +37,7 @@ jobs:
             msvc: one-per-minor
           latest-factors: |
             gcc         UBSan Coverage Shared
-            clang       UBSan ASan MSan Shared
+            clang       UBSan ASan MSan Shared ASan+UBSan+luau
             apple-clang UBSan ASan Shared
             msvc        DebugBuild RelWithDebInfoBuild Shared
           build-types: |
