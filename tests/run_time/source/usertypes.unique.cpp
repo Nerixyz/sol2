@@ -27,6 +27,10 @@
 
 #include <catch2/catch_all.hpp>
 
+#if __has_feature(address_sanitizer)
+#include <sanitizer/lsan_interface.h>
+#endif
+
 inline namespace sol2_test_usertype_unique {
 	template <typename Type, typename Deleter = std::default_delete<Type>>
 	class checked_ptr {
@@ -181,6 +185,10 @@ TEST_CASE("usertype/private-constructible", "Check to make sure special snowflak
 		lua.new_usertype<factory_test>(
 		     "factory_test", "new", sol::initializers(factory_test::save), "__gc", sol::destructor(factory_test::kill), "a", &factory_test::a);
 
+#if __has_feature(address_sanitizer)
+		// Although factory_test's destructor is called, we will never delete the allocation.
+		__lsan::ScopedDisabler guard;
+#endif
 		std::unique_ptr<factory_test, factory_test::deleter> f = factory_test::make();
 		lua.set("true_a", factory_test::true_a, "f", f.get());
 		{

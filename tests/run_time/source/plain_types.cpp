@@ -27,6 +27,9 @@
 #include <sol/sol.hpp>
 #include <catch2/catch_all.hpp>
 
+#if __has_feature(address_sanitizer)
+#include <sanitizer/lsan_interface.h>
+#endif
 
 TEST_CASE("plain/alignment", "test that aligned classes in certain compilers don't trigger compiler errors") {
 #ifdef _MSC_VER
@@ -79,6 +82,11 @@ TEST_CASE("plain/indestructible", "test that we error for types that are innatel
 		~indestructible() {
 		}
 	};
+
+#if __has_feature(address_sanitizer)
+	// Although indestructible's destructor is called, we will never delete the allocation.
+	__lsan::ScopedDisabler guard;
+#endif
 
 	SECTION("doomed") {
 		sol::state lua;

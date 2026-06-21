@@ -4,6 +4,10 @@
 #include <memory>
 #include <iostream>
 
+#if __has_feature(address_sanitizer)
+#include <sanitizer/lsan_interface.h>
+#endif
+
 struct holy {
 private:
 	holy() : data() {
@@ -23,6 +27,10 @@ public:
 	const int data;
 
 	static std::unique_ptr<holy, deleter> create() {
+#if __has_feature(address_sanitizer)
+		// 'holy' will never be deleted.
+		__lsan::ScopedDisabler guard;
+#endif
 		std::cout << "creating 'holy' unique_ptr directly and "
 		             "letting sol/Lua handle it"
 		          << std::endl;
