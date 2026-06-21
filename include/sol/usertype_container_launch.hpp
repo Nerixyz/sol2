@@ -364,7 +364,7 @@ namespace sol {
 					} };
 
 #if SOL_IS_ON(SOL_USE_LUAU)
-					if constexpr (std::is_pointer_v<T>) {
+					if constexpr (!std::is_pointer_v<T>) {
 						detail::set_userdata_dtor_at(L, -1, &detail::usertype_alloc_destroy_mem<T>);
 					}
 #endif

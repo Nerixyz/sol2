@@ -30,5 +30,7 @@ int main(int, char*[]) {
 
 	std::cout << std::endl;
 
+	lua_close(L);
+
 	return 0;
 }
