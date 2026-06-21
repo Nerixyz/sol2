@@ -26,6 +26,12 @@
 
 #include <sol/stack_check_unqualified.hpp>
 
+// MSVC <14.50 warns about unreachable code here. But this code depends on template parameters.
+#if !defined(__clang__) && defined(_MSC_VER) && _MSC_VER < 1950
+#pragma waring(push)
+#pragma warning(disable : 4702)
+#endif
+
 namespace sol { namespace stack {
 
 	template <typename X, type expected, typename>
@@ -85,5 +91,9 @@ namespace sol { namespace stack {
 		}
 	};
 }} // namespace sol::stack
+
+#if !defined(__clang__) && defined(_MSC_VER) && _MSC_VER < 1950
+#pragma warning(pop)
+#endif
 
 #endif // SOL_STACK_CHECK_HPP
