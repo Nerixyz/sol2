@@ -34,6 +34,12 @@
 #include <sol/stack.hpp>
 #include <sol/unique_usertype_traits.hpp>
 
+// MSVC <14.50 warns about unreachable code here. But this code depends on template parameters.
+#if !defined(__clang__) && defined(_MSC_VER) && _MSC_VER < 1950
+#pragma waring(push)
+#pragma warning(disable : 4702)
+#endif
+
 namespace sol {
 	namespace u_detail {
 
@@ -977,5 +983,9 @@ namespace sol {
 	struct is_function_binding : meta::neg<is_variable_binding<T>> { };
 
 } // namespace sol
+
+#if !defined(__clang__) && defined(_MSC_VER) && _MSC_VER < 1950
+#pragma warning(pop)
+#endif
 
 #endif // SOL_CALL_HPP
