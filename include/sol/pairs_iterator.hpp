@@ -152,6 +152,7 @@ namespace sol {
 				sol::protected_function_result next_results = m_next_function_ref(m_table_ref, stack_reference(m_L, m_key_index));
 				if (!next_results.valid()) {
 					// TODO: abort, or throw an error?
+					{ sol::protected_function_result res(std::move(next_results)); }
 					m_clear();
 					m_key_index = empty_key_index;
 					return *this;
