@@ -9,7 +9,7 @@ int main(int, char*[]) {
 	          << std::endl;
 
 	{
-		std::ofstream out("a_lua_script.lua");
+		std::ofstream out("a_lua_script_safe.lua");
 		out << "print('hi from a lua script file')";
 	}
 
@@ -29,7 +29,7 @@ int main(int, char*[]) {
 
 	// load and execute from file
 	auto script_from_file_result = lua.safe_script_file(
-	     "a_lua_script.lua", sol::script_pass_on_error);
+	     "a_lua_script_safe.lua", sol::script_pass_on_error);
 	if (!script_from_file_result.valid()) {
 		sol::error err = script_from_file_result;
 		std::cerr
@@ -69,7 +69,7 @@ int main(int, char*[]) {
 
 	std::cout << std::endl;
 
-	{ std::remove("a_lua_script.lua"); }
+	{ std::remove("a_lua_script_safe.lua"); }
 
 	return 0;
 }
