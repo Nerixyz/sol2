@@ -27,7 +27,7 @@
 
 #include <catch2/catch_all.hpp>
 
-#if __has_feature(address_sanitizer)
+#if SOL_IS_ON(SOL_WITH_ASAN)
 #include <sanitizer/lsan_interface.h>
 #endif
 
@@ -185,7 +185,7 @@ TEST_CASE("usertype/private-constructible", "Check to make sure special snowflak
 		lua.new_usertype<factory_test>(
 		     "factory_test", "new", sol::initializers(factory_test::save), "__gc", sol::destructor(factory_test::kill), "a", &factory_test::a);
 
-#if __has_feature(address_sanitizer)
+#if SOL_IS_ON(SOL_WITH_ASAN)
 		// Although factory_test's destructor is called, we will never delete the allocation.
 		__lsan::ScopedDisabler guard;
 #endif

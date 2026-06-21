@@ -35,9 +35,10 @@ jobs:
           subrange-policy: |
             foo: bar
             msvc: one-per-minor
+          # FIXME: Add MSan (requires building STL)
           latest-factors: |
             gcc         UBSan Coverage Shared
-            clang       UBSan ASan MSan Shared
+            clang       UBSan ASan Shared
             apple-clang UBSan ASan Shared
             msvc        DebugBuild RelWithDebInfoBuild Shared
           build-types: |

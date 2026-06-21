@@ -27,7 +27,7 @@
 #include <sol/sol.hpp>
 #include <catch2/catch_all.hpp>
 
-#if __has_feature(address_sanitizer)
+#if SOL_IS_ON(SOL_WITH_ASAN)
 #include <sanitizer/lsan_interface.h>
 #endif
 
@@ -83,7 +83,7 @@ TEST_CASE("plain/indestructible", "test that we error for types that are innatel
 		}
 	};
 
-#if __has_feature(address_sanitizer)
+#if SOL_IS_ON(SOL_WITH_ASAN))
 	// Although indestructible's destructor is called, we will never delete the allocation.
 	__lsan::ScopedDisabler guard;
 #endif

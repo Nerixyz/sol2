@@ -4,7 +4,7 @@
 #include <memory>
 #include <iostream>
 
-#if __has_feature(address_sanitizer)
+#if SOL_IS_ON(SOL_WITH_ASAN)
 #include <sanitizer/lsan_interface.h>
 #endif
 
@@ -27,7 +27,7 @@ public:
 	const int data;
 
 	static std::unique_ptr<holy, deleter> create() {
-#if __has_feature(address_sanitizer)
+#if SOL_IS_ON(SOL_WITH_ASAN)
 		// 'holy' will never be deleted.
 		__lsan::ScopedDisabler guard;
 #endif
