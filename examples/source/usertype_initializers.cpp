@@ -4,6 +4,10 @@
 #include <memory>
 #include <iostream>
 
+#if SOL_IS_ON(SOL_WITH_ASAN)
+#include <sanitizer/lsan_interface.h>
+#endif
+
 struct holy {
 private:
 	holy() : data() {
@@ -23,6 +27,10 @@ public:
 	const int data;
 
 	static std::unique_ptr<holy, deleter> create() {
+#if SOL_IS_ON(SOL_WITH_ASAN)
+		// 'holy' will never be deleted.
+		__lsan::ScopedDisabler guard;
+#endif
 		std::cout << "creating 'holy' unique_ptr directly and "
 		             "letting sol/Lua handle it"
 		          << std::endl;

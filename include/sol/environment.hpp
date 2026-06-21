@@ -119,7 +119,7 @@ namespace sol {
 			int target_index = pp.index_of(target);
 #if SOL_LUA_VERSION_I_ < 502
 			// Use lua_setfenv
-			this->push();
+			this->push(L);
 			int success_result = lua_setfenv(L, target_index);
 			return success_result != 0;
 #else

@@ -25,9 +25,10 @@ jobs:
         id: cpp-matrix
         with:
           standards: ">=17 <=20"
+          # FIXME: It looks like Clang <=18 has an issue when getting std::vector<std::variant<>> out of lua.
           compilers: |
             gcc >=8
-            clang >=16
+            clang >=19
             msvc >=14
             apple-clang *
             mingw *
@@ -35,9 +36,10 @@ jobs:
           subrange-policy: |
             foo: bar
             msvc: one-per-minor
+          # FIXME: Add MSan (requires building STL)
           latest-factors: |
             gcc         UBSan Coverage Shared
-            clang       UBSan ASan MSan Shared
+            clang       UBSan ASan Shared
             apple-clang UBSan ASan Shared
             msvc        DebugBuild RelWithDebInfoBuild Shared
           build-types: |
@@ -101,6 +103,7 @@ jobs:
           extra-args: "\"-DSOL2_LUA_VERSION=${{ matrix.lua-version }}\" -DSOL2_CI=ON -DSOL2_BUILD_LUA=ON -DBUILD_LUA_AS_DLL=${{ matrix.shared && 'ON' || 'OFF'}} -DSOL2_TESTS=ON -DSOL2_EXAMPLES=${{ case(matrix.coverage || false, 'OFF', 'ON') }} -DSOL2_TESTS_EXAMPLES=ON"
           package: false
           install: false
+          run-tests: true
 
       # This is mostly copied from the mrdocs CI
       - name: Codecov
