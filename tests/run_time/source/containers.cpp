@@ -600,24 +600,17 @@ TEST_CASE("containers/keep alive", "containers are kept alive even if they are r
 #undef PATTERN
 
 	sol::optional<sol::error> maybe_error = lua.safe_script(
+	     R"lua(
+print("LET'S GET IT BAYBEEE!")
+	)lua"
 #if SOL_IS_ON(SOL_USE_LUAU)
-	     R"lua(
-print("LET'S GET IT BAYBEEE!")
-for i, v in get_collection() do
-	collectgarbage()
-	collectgarbage()
-	local index = i - 1
-	print(i, index, (index % 10), v)
-	assert((index % 10) == v)
-end
-collectgarbage()
-collectgarbage()
-print("YEEEAH!")
-)lua"
+	     "for i, v in get_collection() do"
+#elif SOL_LUA_VERSION < 502
+	     "for i, v in get_collection():pairs() do"
 #else
+	     "for i, v in pairs(get_collection()) do"
+#endif
 	     R"lua(
-print("LET'S GET IT BAYBEEE!")
-for i, v in pairs(get_collection()) do
 	collectgarbage()
 	collectgarbage()
 	local index = i - 1
@@ -628,7 +621,6 @@ collectgarbage()
 collectgarbage()
 print("YEEEAH!")
 )lua"
-#endif
 	);
 	REQUIRE_FALSE(maybe_error.has_value());
 }

@@ -157,6 +157,22 @@
 	#define SOL_COMPILER_MINGW_I_ SOL_DEFAULT_OFF
 #endif
 
+#if defined(SOL_WITH_ASAN)
+	#if (SOL_WITH_ASAN != 0)
+		#define SOL_WITH_ASAN_I_ SOL_ON
+	#else
+		#define SOL_WITH_ASAN_I_ SOL_OFF 
+	#endif
+#elif defined(__has_feature)
+	#if __has_feature(address_sanitizer)
+		#define SOL_WITH_ASAN_I_ SOL_ON
+	#else
+		#define SOL_WITH_ASAN_I_ SOL_OFF 
+	#endif
+#else
+	#define SOL_WITH_ASAN_I_ SOL_OFF 
+#endif
+
 #if SIZE_MAX <= 0xFFFFULL
 	#define SOL_PLATFORM_X16_I_ SOL_ON
 	#define SOL_PLATFORM_X86_I_ SOL_OFF

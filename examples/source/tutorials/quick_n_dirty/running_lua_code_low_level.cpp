@@ -10,7 +10,7 @@ int main(int, char*[]) {
 	          << std::endl;
 
 	{
-		std::ofstream out("a_lua_script.lua");
+		std::ofstream out("a_lua_script_low_level.lua");
 		out << "print('hi from a lua script file')";
 	}
 
@@ -19,7 +19,7 @@ int main(int, char*[]) {
 
 	// load file without execute
 	sol::load_result script1
-	     = lua.load_file("a_lua_script.lua");
+	     = lua.load_file("a_lua_script_low_level.lua");
 	// execute
 	script1();
 
@@ -42,7 +42,7 @@ int main(int, char*[]) {
 
 	std::cout << std::endl;
 
-	{ std::remove("a_lua_script.lua"); }
+	{ std::remove("a_lua_script_low_level.lua"); }
 
 	return 0;
 }

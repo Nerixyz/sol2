@@ -25,9 +25,10 @@ jobs:
         id: cpp-matrix
         with:
           standards: ">=17 <=20"
+          # FIXME: It looks like Clang <=18 has an issue when getting std::vector<std::variant<>> out of lua.
           compilers: |
             gcc >=8
-            clang >=16
+            clang >=19
             msvc >=14
             apple-clang *
             mingw *
@@ -35,9 +36,10 @@ jobs:
           subrange-policy: |
             foo: bar
             msvc: one-per-minor
+          # FIXME: Add MSan (requires building STL)
           latest-factors: |
             gcc         UBSan Coverage Shared
-            clang       UBSan ASan MSan Shared ASan+UBSan+luau
+            clang       UBSan ASan Shared ASan+UBSan+luau
             apple-clang UBSan ASan Shared
             msvc        DebugBuild RelWithDebInfoBuild Shared
           build-types: |

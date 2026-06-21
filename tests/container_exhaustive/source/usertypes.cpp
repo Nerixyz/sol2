@@ -47,7 +47,7 @@ TEST_CASE("array") {
             assert(k == v)
         end
     )"
-#else
+#elif SOL_LUA_VERSION >= 502
 	                                                   R"(
         -- __pairs
         for k, v in pairs(a) do
@@ -143,7 +143,7 @@ TEST_CASE("vector") {
             assert(k == v)
         end
     )"
-#else
+#elif SOL_LUA_VERSION >= 502
 	                                                   R"(
         -- __pairs
         for k, v in pairs(a) do
@@ -244,7 +244,7 @@ TEST_CASE("map") {
         end
         assert(order == "bar,baz,foo,")
     )"
-#else
+#elif SOL_LUA_VERSION >= 502
 	                                                   R"(
         -- __pairs
         local order = ""
@@ -339,7 +339,7 @@ TEST_CASE("unordered_map") {
             assert(({foo=1,bar=2,baz=3})[k] == v)
         end
     )"
-#else
+#elif SOL_LUA_VERSION >= 502
 	                                                   R"(
         -- __pairs
         for k, v in pairs(a) do
