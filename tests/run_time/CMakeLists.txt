@@ -35,13 +35,11 @@ set(working_tests
 	container_semantics.ordered
 	container_semantics.unordered
 	container_shims
-	# Broken because of detail::ebco
-	# container_table
+	container_table
 	container.usertype_check
 	containers
 	containers.roundtrip
-	# Broken because of detail::ebco
-	# containers.table
+	containers.table
 	coroutines
 	customizations_private
 	customizations
@@ -54,8 +52,7 @@ set(working_tests
 	operators
 	overflow
 	plain_types
-	# At least one test is broken. Haven't looked deeper into fixing it.
-	# policies
+	policies
 	proxies
 	state
 	storage

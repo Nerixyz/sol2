@@ -782,15 +782,17 @@ namespace sol {
 				lua_State* L;
 				const char* key;
 				undefined_method_func on_new_table;
+				int usertype_index;
 
-				undefined_metatable(lua_State* l, const char* k, undefined_method_func umf) : L(l), key(k), on_new_table(umf) {
+				undefined_metatable(lua_State* l, const char* k, undefined_method_func umf, int usertype_index = -2)
+				: L(l), key(k), on_new_table(umf), usertype_index(usertype_index) {
 				}
 
 				void operator()() const {
 					if (luaL_newmetatable(L, key) == 1) {
 						on_new_table(stack_reference(L, -1));
 					}
-					lua_setmetatable(L, -2);
+					lua_setmetatable(L, usertype_index);
 				}
 			};
 		} // namespace stack_detail
