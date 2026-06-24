@@ -44,7 +44,6 @@ set(working_tests
 	customizations_private
 	customizations
 	dump
-	# FIXME: Contains one SOL_BROKEN_TESTS
 	functions
 	functions.std
 	gc

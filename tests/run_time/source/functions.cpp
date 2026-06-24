@@ -664,7 +664,6 @@ N = n(1, 2, 3)
 		REQUIRE_FALSE(result.valid());
 	}
 	// This causes the test executable to exit.
-#ifdef SOL_BROKEN_TESTS
 	{
 		auto tresult = lua.safe_script("t(2)", sol::script_pass_on_error);
 		REQUIRE_FALSE(tresult.valid());
@@ -675,7 +674,6 @@ N = n(1, 2, 3)
 		auto tresult4 = lua.safe_script("t4(2)", sol::script_pass_on_error);
 		REQUIRE_FALSE(tresult4.valid());
 	}
-#endif
 	{
 		auto result = lua.safe_script("u(inner)", sol::script_pass_on_error);
 		REQUIRE_FALSE(result.valid());

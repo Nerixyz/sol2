@@ -352,7 +352,11 @@ namespace sol { namespace function_detail {
 		typedef std::remove_pointer_t<std::decay_t<Function>> function_type;
 		typedef lua_bind_traits<function_type> traits_type;
 
-		static int real_call(lua_State* L) noexcept(std::is_nothrow_copy_assignable_v<T>) {
+		static int real_call(lua_State* L)
+#if SOL_IS_OFF(SOL_PLATFORM_WINDOWS) || !defined(__clang__)
+			noexcept(std::is_nothrow_copy_assignable_v<T>)
+#endif
+		{
 			// Layout:
 			// idx 1...n: verbatim data of member variable pointer
 			auto memberdata = stack::stack_detail::get_as_upvalues<function_type>(L);
@@ -367,7 +371,7 @@ namespace sol { namespace function_detail {
 
 		template <bool is_yielding, bool no_trampoline>
 		static int call(lua_State* L)
-#if SOL_IS_ON(SOL_COMPILER_CLANG) && __clang_major__ == 18
+#if SOL_IS_ON(SOL_COMPILER_CLANG) && (__clang_major__ == 18 || SOL_IS_ON(SOL_PLATFORM_WINDOWS))
 		// broken in Clang 18 - see llvm.org/pr91362
 #else
 			noexcept(std::is_nothrow_copy_assignable_v<T>)
