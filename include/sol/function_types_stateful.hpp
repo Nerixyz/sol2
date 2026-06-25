@@ -121,7 +121,7 @@ namespace sol { namespace function_detail {
 		}
 
 		static int call(lua_State* L, member_variable& self)
-#if SOL_IS_OFF(SOL_PLATFORM_WINDOWS)
+#if SOL_IS_OFF(SOL_COMPILER_VCXX)
 			noexcept(std::is_nothrow_copy_assignable_v<T>)
 #endif
 		{
@@ -149,7 +149,7 @@ namespace sol { namespace function_detail {
 		}
 
 		int operator()(lua_State* L)
-#if SOL_IS_OFF(SOL_PLATFORM_WINDOWS)
+#if SOL_IS_OFF(SOL_COMPILER_VCXX)
 			noexcept(std::is_nothrow_copy_assignable_v<T>)
 #endif
 		{
