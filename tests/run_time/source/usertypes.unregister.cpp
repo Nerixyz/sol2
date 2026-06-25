@@ -47,7 +47,6 @@ inline namespace sol2_tests_usertypes_unregister {
 
 } // namespace sol2_tests_usertypes_unregister
 
-#ifdef SOL_BROKEN_TESTS
 TEST_CASE("usertypes/unregister", "make sure that a class can still be bound but that it becomes completely unregistered") {
 	const sol::string_view line1 = "assert(u:f() == 'registered')";
 	const sol::string_view line2 = "assert(urm.a() == 20)";
@@ -132,8 +131,6 @@ TEST_CASE("usertypes/unregister", "make sure that a class can still be bound but
 		unregister_me& u = lua["u"];
 		REQUIRE(u.b == 5.5);
 		REQUIRE(u.f() == "registered");
-
-		register_urm();
 	}
 	SECTION("unregister lua") {
 		register_urm();
@@ -157,7 +154,6 @@ TEST_CASE("usertypes/unregister", "make sure that a class can still be bound but
 		REQUIRE(u.f() == "registered");
 	}
 }
-#endif
 
 TEST_CASE("usertypes/unregister multiple states", "guarantee unregistration can happen from multiple states without interfering with the originals") {
 	sol::state lua0;

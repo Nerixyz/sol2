@@ -74,7 +74,6 @@ set(working_tests
 	usertypes.properties
 	usertypes.runtime
 	usertypes.unique
-	# FIXME: Contains one SOL_BROKEN_TESTS
 	usertypes.unregister
 	utility
 	variadics
