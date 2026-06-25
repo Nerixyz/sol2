@@ -353,7 +353,7 @@ namespace sol { namespace function_detail {
 		typedef lua_bind_traits<function_type> traits_type;
 
 		static int real_call(lua_State* L)
-#if SOL_IS_OFF(SOL_PLATFORM_WINDOWS) || !defined(__clang__)
+#if SOL_IS_OFF(SOL_PLATFORM_WINDOWS)
 			noexcept(std::is_nothrow_copy_assignable_v<T>)
 #endif
 		{
@@ -371,7 +371,7 @@ namespace sol { namespace function_detail {
 
 		template <bool is_yielding, bool no_trampoline>
 		static int call(lua_State* L)
-#if SOL_IS_ON(SOL_COMPILER_CLANG) && (__clang_major__ == 18 || SOL_IS_ON(SOL_PLATFORM_WINDOWS))
+#if (SOL_IS_ON(SOL_COMPILER_CLANG) && __clang_major__ == 18) || SOL_IS_ON(SOL_PLATFORM_WINDOWS)
 		// broken in Clang 18 - see llvm.org/pr91362
 #else
 			noexcept(std::is_nothrow_copy_assignable_v<T>)

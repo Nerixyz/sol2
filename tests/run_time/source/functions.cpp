@@ -663,7 +663,6 @@ N = n(1, 2, 3)
 		auto result = lua.safe_script("s(o2, 2)", sol::script_pass_on_error);
 		REQUIRE_FALSE(result.valid());
 	}
-	// This causes the test executable to exit.
 	{
 		auto tresult = lua.safe_script("t(2)", sol::script_pass_on_error);
 		REQUIRE_FALSE(tresult.valid());
