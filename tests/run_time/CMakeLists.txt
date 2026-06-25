@@ -71,7 +71,6 @@ set(working_tests
 	usertypes.inheritance.multi
 	usertypes.member_variables
 	usertypes.overload
-	# FIXME: Contains two SOL_BROKEN_TESTS
 	usertypes.properties
 	usertypes.runtime
 	usertypes.unique
