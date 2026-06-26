@@ -27,67 +27,6 @@ file(GLOB sources
 	CONFIGURE_DEPENDS
 	source/*.cpp)
 
-# Many tests are broken. Only include the working ones.
-set(working_tests
-	basic
-	container_semantics
-	container_semantics.custom
-	container_semantics.ordered
-	container_semantics.unordered
-	container_shims
-	container_table
-	container.usertype_check
-	containers
-	containers.roundtrip
-	containers.table
-	coroutines
-	customizations_private
-	customizations
-	dump
-	functions
-	functions.std
-	gc
-	lua_value
-	operators
-	overflow
-	plain_types
-	policies
-	proxies
-	state
-	storage
-	strings
-	tables.checks
-	tables.clear
-	tables
-	tables.enums
-	tables.indexing
-	tables.insertion
-	tables.traversal
-	usertypes.auxiliary_keys
-	usertypes.basic
-	usertypes.constructors
-	usertypes
-	usertypes.inheritance
-	usertypes.inheritance.multi
-	usertypes.member_variables
-	usertypes.overload
-	usertypes.properties
-	usertypes.runtime
-	usertypes.unique
-	usertypes.unregister
-	utility
-	variadics
-)
-list(JOIN working_tests | working_re)
-list(FILTER sources INCLUDE REGEX "[/\\\\](main|${working_re})\\.cpp$")
-
-list(LENGTH working_tests working_len)
-list(LENGTH sources sources_len)
-math(EXPR sources_len "${sources_len} - 1") # account for main.cpp
-if (NOT working_len EQUAL sources_len)
-	message(FATAL_ERROR "Mismatch between specified (#=${working_len}) and matched (#=${sources_len}) tests.")
-endif()
-
 sol2_create_basic_test(sol2.tests.run_time sol2::sol2 ${sources})
 target_compile_definitions(sol2.tests.run_time PRIVATE
 	SOL_ALL_SAFETIES_ON=1)
