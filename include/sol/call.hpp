@@ -46,6 +46,8 @@ namespace sol {
 	} // namespace u_detail
 
 	namespace policy_detail {
+		// lua_setuservalue doesn't work on usertypes in Luau.
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		template <int I, int... In>
 		inline void handle_policy(static_stack_dependencies<I, In...>, lua_State* L, int&) {
 			if constexpr (sizeof...(In) == 0) {
@@ -71,7 +73,10 @@ namespace sol {
 				lua_setuservalue(L, ai);
 			}
 		}
+#endif
 
+// lua_setuservalue doesn't work on usertypes in Luau.
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		template <int... In>
 		inline void handle_policy(returns_self_with<In...>, lua_State* L, int& pushed) {
 			pushed = stack::push(L, raw_index(1));
@@ -94,6 +99,7 @@ namespace sol {
 			}
 			lua_setuservalue(L, ai);
 		}
+#endif
 
 		template <typename P, meta::disable<std::is_base_of<detail::policy_base_tag, meta::unqualified_t<P>>> = meta::enabler>
 		inline void handle_policy(P&& p, lua_State* L, int& pushed) {
