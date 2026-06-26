@@ -67,10 +67,9 @@ void check_ordered_values(S& src, T& target) {
 
 template <typename S, typename T>
 void table_check_unordered_values(S& src, T& target) {
-	std::size_t idx = 0;
 	auto b = std::begin(target);
 	auto e = std::end(target);
-	for (; b != e; ++b, ++idx) {
+	for (; b != e; ++b) {
 		auto sb = std::begin(src);
 		auto se = std::end(src);
 		auto it = std::find(sb, se, *b);

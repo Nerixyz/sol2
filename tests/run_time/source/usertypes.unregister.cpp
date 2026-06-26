@@ -47,7 +47,6 @@ inline namespace sol2_tests_usertypes_unregister {
 
 } // namespace sol2_tests_usertypes_unregister
 
-#ifdef SOL_BROKEN_TESTS
 TEST_CASE("usertypes/unregister", "make sure that a class can still be bound but that it becomes completely unregistered") {
 	const sol::string_view line1 = "assert(u:f() == 'registered')";
 	const sol::string_view line2 = "assert(urm.a() == 20)";
@@ -91,6 +90,9 @@ TEST_CASE("usertypes/unregister", "make sure that a class can still be bound but
 	SECTION("unregister C++") {
 		register_urm();
 
+		// Don't let the usertype get deleted just yet.
+		lua_gc(lua.lua_state(), LUA_GCSTOP, 0);
+
 		{
 			sol::usertype<unregister_me> urm = lua["urm"];
 			urm.unregister();
@@ -110,9 +112,14 @@ TEST_CASE("usertypes/unregister", "make sure that a class can still be bound but
 		unregister_me& u = lua["u"];
 		REQUIRE(u.b == 5.5);
 		REQUIRE(u.f() == "registered");
+
+		lua_gc(lua.lua_state(), LUA_GCRESTART, 0);
 	}
 	SECTION("re-register") {
 		register_urm();
+
+		// Don't let the usertype get deleted just yet.
+		lua_gc(lua.lua_state(), LUA_GCSTOP, 0);
 
 		sol::protected_function urm_unregister_func = lua["urm_unregister"];
 		auto unregister_result = urm_unregister_func();
@@ -133,10 +140,13 @@ TEST_CASE("usertypes/unregister", "make sure that a class can still be bound but
 		REQUIRE(u.b == 5.5);
 		REQUIRE(u.f() == "registered");
 
-		register_urm();
+		lua_gc(lua.lua_state(), LUA_GCRESTART, 0);
 	}
 	SECTION("unregister lua") {
 		register_urm();
+
+		// Don't let the usertype get deleted just yet.
+		lua_gc(lua.lua_state(), LUA_GCSTOP, 0);
 
 		auto unregister_result = lua.safe_script("urm_unregister()", sol::script_pass_on_error);
 		REQUIRE(unregister_result.valid());
@@ -155,9 +165,10 @@ TEST_CASE("usertypes/unregister", "make sure that a class can still be bound but
 		unregister_me& u = lua["u"];
 		REQUIRE(u.b == 5.5);
 		REQUIRE(u.f() == "registered");
+
+		lua_gc(lua.lua_state(), LUA_GCRESTART, 0);
 	}
 }
-#endif
 
 TEST_CASE("usertypes/unregister multiple states", "guarantee unregistration can happen from multiple states without interfering with the originals") {
 	sol::state lua0;

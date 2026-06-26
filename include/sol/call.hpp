@@ -337,7 +337,7 @@ namespace sol {
 
 			T* obj = detail::usertype_allocate<T>(L);
 			reference userdataref(L, -1);
-			stack::stack_detail::undefined_metatable umf(L, &meta[0], &stack::stack_detail::set_undefined_methods_on<T>);
+			stack::stack_detail::undefined_metatable umf(L, &meta[0], &stack::stack_detail::set_undefined_methods_on<T>, 1);
 
 			// put userdata at the first index
 			lua_insert(L, 1);
@@ -679,7 +679,7 @@ namespace sol {
 
 				T* obj = detail::usertype_allocate<T>(L);
 				reference userdataref(L, -1);
-				stack::stack_detail::undefined_metatable umf(L, &meta[0], &stack::stack_detail::set_undefined_methods_on<T>);
+				stack::stack_detail::undefined_metatable umf(L, &meta[0], &stack::stack_detail::set_undefined_methods_on<T>, 1);
 
 				// put userdata at the first index
 				lua_insert(L, 1);
@@ -882,7 +882,7 @@ namespace sol {
 
 			template <std::size_t... In>
 			static int call(std::index_sequence<In...>, lua_State* L, P& fx) {
-				int pushed = lua_call_wrapper<T, F, is_index, is_variable, checked, boost, false, C> {}.call(L, fx.value);
+				int pushed = lua_call_wrapper<T, F, is_index, is_variable, checked, boost, false, C> { }.call(L, fx.value);
 				(void)detail::swallow { int(), (policy_detail::handle_policy(std::get<In>(fx.policies), L, pushed), int())... };
 				return pushed;
 			}

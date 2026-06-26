@@ -371,8 +371,8 @@ namespace sol {
 		as_table_t(meta::unqualified_t<T>&& obj) noexcept(std::is_nothrow_constructible_v<base_t, meta::unqualified_t<T>&&>) : base_t(std::move(obj)) {
 		}
 		template <typename Arg, typename... Args,
-		     std::enable_if_t<
-		          !std::is_same_v<as_table_t, meta::unqualified_t<Arg>> && !std::is_same_v<meta::unqualified_t<T>, meta::unqualified_t<Arg>>>* = nullptr>
+		          std::enable_if_t<!std::is_same_v<as_table_t, meta::unqualified_t<Arg>> && !std::is_same_v<meta::unqualified_t<T>, meta::unqualified_t<Arg>>
+		                           && sizeof...(Args) != 0>* = nullptr>
 		as_table_t(Arg&& arg, Args&&... args) noexcept(std::is_nothrow_constructible_v<base_t, Arg, Args...>)
 		: base_t(std::forward<Arg>(arg), std::forward<Args>(args)...) {
 		}
@@ -401,13 +401,15 @@ namespace sol {
 		nested(nested&&) = default;
 		nested& operator=(const nested&) = default;
 		nested& operator=(nested&&) = default;
+		nested(meta::unqualified_t<T>& obj) noexcept(std::is_nothrow_constructible_v<base_t, meta::unqualified_t<T>&>) : base_t(obj) {
+		}
 		nested(const meta::unqualified_t<T>& obj) noexcept(std::is_nothrow_constructible_v<base_t, const meta::unqualified_t<T>&>) : base_t(obj) {
 		}
 		nested(meta::unqualified_t<T>&& obj) noexcept(std::is_nothrow_constructible_v<base_t, meta::unqualified_t<T>&&>) : base_t(std::move(obj)) {
 		}
 		template <typename Arg, typename... Args,
-		     std::enable_if_t<
-		          !std::is_same_v<nested, meta::unqualified_t<Arg>> && !std::is_same_v<meta::unqualified_t<T>, meta::unqualified_t<Arg>>>* = nullptr>
+		          std::enable_if_t<!std::is_same_v<nested, meta::unqualified_t<Arg>> && !std::is_same_v<meta::unqualified_t<T>, meta::unqualified_t<Arg>>
+		                           && sizeof...(Args) != 0>* = nullptr>
 		nested(Arg&& arg, Args&&... args) noexcept(std::is_nothrow_constructible_v<base_t, Arg, Args...>)
 		: base_t(std::forward<Arg>(arg), std::forward<Args>(args)...) {
 		}
