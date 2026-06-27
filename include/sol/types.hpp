@@ -676,6 +676,12 @@ namespace sol {
 		jit,
 		// library for handling utf8: new to Lua
 		utf8,
+		// Luau only. The buffer library: fixed size mutable memory blocks
+		buffer,
+		// Luau only. The class library: utilities for classes
+		class_,
+		// Luau only. The vector library: functions for the vector type
+		vector,
 		// do not use
 		count
 	};

@@ -204,6 +204,24 @@ namespace sol {
 						lua_pop(L, 1);
 #endif // LuaJIT Only
 						break;
+					case lib::buffer:
+#if SOL_IS_ON(SOL_USE_LUAU)
+						luaL_requiref(L, "buffer", luaopen_buffer, 1);
+						lua_pop(L, 1);
+#endif // Luau only
+						break;
+					case lib::class_:
+#if SOL_IS_ON(SOL_USE_LUAU)
+						luaL_requiref(L, "class", luaopen_class, 1);
+						lua_pop(L, 1);
+#endif // Luau only
+						break;
+					case lib::vector:
+#if SOL_IS_ON(SOL_USE_LUAU)
+						luaL_requiref(L, "vector", luaopen_vector, 1);
+						lua_pop(L, 1);
+#endif // Luau only
+						break;
 					case lib::count:
 					default:
 						break;
