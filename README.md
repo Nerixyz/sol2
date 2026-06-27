@@ -6,10 +6,11 @@ This fork attempts to deliver some improvements over upstream. As of December 20
 
 The following improvements were made:
 
+- Lua 5.5 support
+- Luau support (see [docs](https://nerixyz.github.io/sol2/#luau-support))
+- Added Sphinx docs with the Furo theme at <https://nerixyz.github.io/sol2>.
 - Added CI with more configurations (more compiler and Lua versions)
 - Added code coverage [![codecov](https://codecov.io/gh/Nerixyz/sol2/graph/badge.svg?token=1K3ZZZ8JGS)](https://codecov.io/gh/Nerixyz/sol2)
-- Fix for https://github.com/ThePhD/sol2/issues/1581
-- Lua 5.5 support
 
 ---
 

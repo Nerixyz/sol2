@@ -552,7 +552,6 @@ namespace sol {
 			return 0;
 		}
 
-
 		template <typename T>
 		void reserve(T&, std::size_t) {
 		}

@@ -24,9 +24,7 @@
 #ifndef SOL_STATE_VIEW_HPP
 #define SOL_STATE_VIEW_HPP
 
-#include "lua.h"
 #include <sol/error.hpp>
-#include <sol/stack_core.hpp>
 #include <sol/table.hpp>
 #include <sol/environment.hpp>
 #include <sol/load_result.hpp>

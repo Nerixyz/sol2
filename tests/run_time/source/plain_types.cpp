@@ -83,7 +83,7 @@ TEST_CASE("plain/indestructible", "test that we error for types that are innatel
 		}
 	};
 
-	#if SOL_IS_ON(SOL_WITH_ASAN)
+#if SOL_IS_ON(SOL_WITH_ASAN)
 	// Although indestructible's destructor is called, we will never delete the allocation.
 	__lsan::ScopedDisabler guard;
 #endif

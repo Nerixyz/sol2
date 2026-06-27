@@ -45,7 +45,6 @@ namespace sol {
 		}
 	};
 
-// FIXME: implement this
 #if SOL_IS_OFF(SOL_USE_LUAU)
 	inline int dump_pass_on_error(lua_State* L_, int result_code, lua_Writer writer_function, void* userdata_pointer_, bool strip) {
 		(void)L_;

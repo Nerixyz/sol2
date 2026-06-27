@@ -24,7 +24,6 @@
 #ifndef SOL_THREAD_HPP
 #define SOL_THREAD_HPP
 
-#include "lua.h"
 #include <sol/reference.hpp>
 #include <sol/object.hpp>
 #include <sol/stack.hpp>

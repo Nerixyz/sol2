@@ -24,9 +24,7 @@
 #ifndef SOL_USERTYPE_STORAGE_HPP
 #define SOL_USERTYPE_STORAGE_HPP
 
-#include "lua.h"
 #include <sol/demangle.hpp>
-#include <sol/stack_core.hpp>
 #include <sol/usertype_core.hpp>
 #include <sol/make_reference.hpp>
 
