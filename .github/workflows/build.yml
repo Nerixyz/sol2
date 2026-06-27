@@ -39,7 +39,7 @@ jobs:
           # FIXME: Add MSan (requires building STL)
           latest-factors: |
             gcc         UBSan Coverage Shared
-            clang       UBSan ASan Shared ASan+UBSan+luau Coverage+luau
+            clang       UBSan ASan Shared ASan+UBSan+luau
             apple-clang UBSan ASan Shared
             msvc        DebugBuild RelWithDebInfoBuild Shared
           build-types: |
