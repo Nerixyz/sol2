@@ -67,7 +67,9 @@ namespace sol {
 		            detail::
 		                 as_pointer_tag> || meta::is_specialization_of_v<Tag, as_value_tag> || meta::is_specialization_of_v<Tag, as_unique_tag> || meta::is_specialization_of_v<Tag, as_table_tag> || std::is_same_v<Tag, as_reference_tag> || std::is_same_v<Tag, with_function_tag>;
 
+#if SOL_IS_ON(SOL_USE_LUAU)
 		inline constexpr int sol_userdata_tag = LUA_UTAG_LIMIT - 1;
+#endif
 
 		using lua_reg_table = luaL_Reg[64];
 
