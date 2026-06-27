@@ -237,7 +237,11 @@ namespace sol { namespace stack {
 				}
 				int metatableindex = lua_gettop(L_);
 				if (stack_detail::check_metatable<d::u<element_no_cv>>(L_, metatableindex)) {
+#if SOL_IS_ON(SOL_USE_LUAU)
+					void* memory = lua_touserdatatagged(L_, index, detail::sol_userdata_tag);
+#else
 					void* memory = lua_touserdata(L_, index);
+#endif
 					memory = detail::align_usertype_unique_destructor(memory);
 					detail::unique_destructor& pdx = *static_cast<detail::unique_destructor*>(memory);
 					bool success = &detail::usertype_unique_alloc_destroy<element, actual> == pdx;

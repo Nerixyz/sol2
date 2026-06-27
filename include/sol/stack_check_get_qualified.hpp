@@ -68,7 +68,11 @@ namespace sol { namespace stack {
 				using element = unique_usertype_element_t<Tu>;
 				using actual = unique_usertype_actual_t<Tu>;
 				tracking.use(1);
+#if SOL_IS_ON(SOL_USE_LUAU)
+				void* memory = lua_touserdatatagged(L, index, detail::sol_userdata_tag);
+#else
 				void* memory = lua_touserdata(L, index);
+#endif
 				memory = detail::align_usertype_unique_destructor(memory);
 				detail::unique_destructor& pdx = *static_cast<detail::unique_destructor*>(memory);
 				if (&detail::usertype_unique_alloc_destroy<element, Tu> == pdx) {
