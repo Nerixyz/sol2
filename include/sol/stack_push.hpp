@@ -496,6 +496,34 @@ namespace sol { namespace stack {
 		}
 	};
 
+#if SOL_IS_ON(SOL_USE_LUAU)
+	template <>
+	struct unqualified_pusher<luau::buffer_view> {
+		static int push(lua_State* L, luau::buffer_view value_) = SOL_DELETE_X("Use sol::copy_buffer to explicitly copy the contents.");
+	};
+
+	template <typename T>
+	struct unqualified_pusher<as_buffer_t<T>> {
+		static int push(lua_State* L, const as_buffer_t<T>& value_) = SOL_DELETE_X("Use sol::copy_buffer to explicitly copy the contents.");
+	};
+
+	template <>
+	struct unqualified_pusher<copy_buffer_t> {
+		static int push(lua_State* L, copy_buffer_t value_) {
+#if SOL_IS_ON(SOL_SAFE_STACK_CHECK)
+			luaL_checkstack(L, 1, detail::not_enough_stack_space_userdata);
+#endif // make sure stack doesn't overflow
+
+			void* buf = lua_newbuffer(L, value_.value().size());
+			if (value_.value().data()) {
+				std::memcpy(buf, value_.value().data(), value_.value().size());
+			}
+
+			return 1;
+		}
+	};
+#endif
+
 	template <typename T>
 	struct unqualified_pusher<nested<T>> {
 		static int push(lua_State* L, const T& nested_value) noexcept {

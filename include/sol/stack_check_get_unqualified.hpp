@@ -116,6 +116,18 @@ namespace sol { namespace stack {
 					tracking.use(1);
 					return static_cast<T>(value);
 				}
+				else if constexpr (meta::any_same_v<T, luau::buffer_view, luau::const_buffer_view>) {
+					size_t len = 0;
+					void* data = lua_tobuffer(L, index, &len);
+					if (!data) {
+						const type t = type_of(L, index);
+						tracking.use(static_cast<int>(t != type::none));
+						handler(L, index, type::buffer, t, "not a buffer");
+						return detail::associated_nullopt_v<Optional>;
+					}
+					tracking.use(1);
+					return luau::buffer_view(data, len);
+				}
 				else {
 					if (!unqualified_check<T>(L, index, std::forward<Handler>(handler))) {
 						tracking.use(static_cast<int>(!lua_isnone(L, index)));

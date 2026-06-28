@@ -24,6 +24,7 @@
 #ifndef SOL_STACK_UNQUALIFIED_GET_HPP
 #define SOL_STACK_UNQUALIFIED_GET_HPP
 
+#include <sol/luau/buffer.hpp>
 #include <sol/version.hpp>
 
 #include <sol/stack_core.hpp>
@@ -607,6 +608,58 @@ namespace sol { namespace stack {
 			return stack::unqualified_get<T*>(L, index, tracking);
 		}
 	};
+
+#if SOL_IS_ON(SOL_USE_LUAU)
+	template <>
+	struct unqualified_getter<luau::buffer_view> {
+		static luau::buffer_view get(lua_State* L, int index, record& tracking) {
+			tracking.use(1);
+			size_t len = 0;
+			void* data = lua_tobuffer(L, index, &len);
+			return luau::buffer_view(data, len);
+		}
+	};
+
+	template <>
+	struct unqualified_getter<luau::const_buffer_view> {
+		static luau::const_buffer_view get(lua_State* L, int index, record& tracking) {
+			tracking.use(1);
+			size_t len = 0;
+			void* data = lua_tobuffer(L, index, &len);
+			return luau::const_buffer_view(data, len);
+		}
+	};
+
+	template <typename C>
+	struct unqualified_getter<as_buffer_t<C>> {
+		static C get(lua_State* L, int index, record& tracking) {
+			auto view = stack::unqualified_get<luau::buffer_view>(L, index, tracking);
+			if constexpr (std::is_constructible_v<C, luau::buffer_view>) {
+				return C(view);
+			}
+			else if constexpr (std::is_constructible_v<C, std::string_view>) {
+				return C(std::string_view(view));
+			}
+			else if constexpr (std::is_constructible_v<C, void*, size_t>) {
+				return C(view.data(), view.size());
+			}
+			else if constexpr (std::is_constructible_v<C, char*, size_t>) {
+				return C(static_cast<char*>(view.data()), view.size());
+			}
+			else if constexpr (std::is_constructible_v<C, unsigned char*, size_t>) {
+				return C(static_cast<unsigned char*>(view.data()), view.size());
+			}
+			else {
+				static_assert(meta::dependent_false<C>, "Container is not constructible from a buffer.");
+			}
+		}
+	};
+
+	template <>
+	struct unqualified_getter<copy_buffer_t> {
+		static copy_buffer_t get(lua_State* L, int index, record& tracking) = SOL_DELETE_X("Use sol::as_buffer/sol::luau::buffer_view");
+	};
+#endif
 
 	template <typename T>
 	struct unqualified_getter<exhaustive<T>> {

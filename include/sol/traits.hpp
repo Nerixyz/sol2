@@ -745,6 +745,9 @@ namespace sol { namespace meta {
 	struct iterator_tag<T, conditional_t<false, typename std::iterator_traits<T>::iterator_category, void>> {
 		using type = typename std::iterator_traits<T>::iterator_category;
 	};
+
+	template <typename T>
+	inline constexpr bool dependent_false = false;
 }}     // namespace sol::meta
 
 #endif // SOL_TRAITS_HPP

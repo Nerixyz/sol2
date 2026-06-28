@@ -881,6 +881,30 @@
 	#define SOL_USER_ASSERT_MSG_I_ SOL_DEFAULT_OFF
 #endif
 
+#ifdef __has_cpp_attribute
+# define SOL_HAS_CPP_ATTRIBUTE(x) __has_cpp_attribute(x)
+#else
+# define SOL_HAS_CPP_ATTRIBUTE(x) 0
+#endif
+
+#if SOL_HAS_CPP_ATTRIBUTE(gsl::Pointer)
+	#define SOL_GSL_POINTER [[gsl::Pointer]]
+#else
+	#define SOL_GSL_POINTER
+#endif
+
+#if SOL_HAS_CPP_ATTRIBUTE(clang::lifetimebound)
+	#define SOL_CLANG_LIFETIME_BOUND [[clang::lifetimebound]]
+#else
+	#define SOL_CLANG_LIFETIME_BOUND
+#endif
+
+#if defined(__cpp_deleted_function) && __cpp_deleted_function >= 202403L
+	#define SOL_DELETE_X(X) delete(X)
+#else
+	#define SOL_DELETE_X(X) delete
+#endif
+
 #include <sol/prologue.hpp>
 #include <sol/epilogue.hpp>
 
