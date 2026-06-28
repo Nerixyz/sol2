@@ -104,20 +104,6 @@
 	#define SOL_USE_MOONJIT_I_ SOL_OFF
 #endif
 
-#if defined(SOL_LUAU)
-	#if (SOL_LUAU != 0)
-		#define SOL_USE_LUAU_I_ SOL_ON
-	#else
-		#define SOL_USE_LUAU_I_ SOL_OFF
-	#endif
-#elif defined(LUAU_FASTMATH_BEGIN) || defined(LUAU_TARGET_SSE41)
-	#define SOL_USE_LUAU_I_ SOL_ON
-#elif defined(SOL_USING_CXX_LUAU)
-	#define SOL_USE_LUAU_I_ SOL_ON
-#else
-	#define SOL_USE_LUAU_I_ SOL_DEFAULT_OFF
-#endif // luau
-
 #if SOL_IS_ON(SOL_USE_LUAU) && !defined(LUA_VERSION_NUM)
 	#define LUA_VERSION_MAJOR_N	5
 	#define LUA_VERSION_MINOR_N	1
