@@ -116,6 +116,7 @@ namespace sol { namespace stack {
 					tracking.use(1);
 					return static_cast<T>(value);
 				}
+#if SOL_IS_ON(SOL_USE_LUAU)
 				else if constexpr (meta::any_same_v<T, luau::buffer_view, luau::const_buffer_view>) {
 					size_t len = 0;
 					void* data = lua_tobuffer(L, index, &len);
@@ -140,6 +141,7 @@ namespace sol { namespace stack {
 					tracking.use(1);
 					return luau::vector::from_pointer(data);
 				}
+#endif
 				else {
 					if (!unqualified_check<T>(L, index, std::forward<Handler>(handler))) {
 						tracking.use(static_cast<int>(!lua_isnone(L, index)));
