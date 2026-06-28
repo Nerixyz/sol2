@@ -172,12 +172,12 @@ namespace sol {
 #else
 #endif
 						break;
-#if SOL_IS_OFF(SOL_USE_LUAU) // no io lib
 					case lib::io:
+#if SOL_IS_OFF(SOL_USE_LUAU) // no io lib
 						luaL_requiref(L, "io", luaopen_io, 1);
 						lua_pop(L, 1);
-						break;
 #endif
+						break;
 					case lib::os:
 						luaL_requiref(L, "os", luaopen_os, 1);
 						lua_pop(L, 1);
