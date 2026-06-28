@@ -123,7 +123,7 @@ namespace sol::luau {
 		}
 #endif
 
-#if __cplusplus >= 201703L
+#if defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201907L
 		constexpr auto operator<=>(const vector& rhs) const noexcept = default;
 #else
 		constexpr bool operator==(const vector& rhs) const noexcept {
