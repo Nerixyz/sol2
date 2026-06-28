@@ -37,6 +37,12 @@
 #endif // variant shenanigans
 
 namespace sol { namespace stack {
+
+	// MSVC <14.50 warns about unreachable code here. But this code depends on template parameters.
+#if !defined(__clang__) && defined(_MSC_VER) && _MSC_VER < 1950
+#pragma waring(push)
+#pragma warning(disable : 4702)
+#endif
 	template <typename Handler>
 	bool loose_table_check(lua_State* L_, int index, Handler&& handler, record& tracking) {
 		tracking.use(1);
@@ -231,7 +237,11 @@ namespace sol { namespace stack {
 				}
 				int metatableindex = lua_gettop(L_);
 				if (stack_detail::check_metatable<d::u<element_no_cv>>(L_, metatableindex)) {
+#if SOL_IS_ON(SOL_USE_LUAU)
+					void* memory = lua_touserdatatagged(L_, index, detail::sol_userdata_tag);
+#else
 					void* memory = lua_touserdata(L_, index);
+#endif
 					memory = detail::align_usertype_unique_destructor(memory);
 					detail::unique_destructor& pdx = *static_cast<detail::unique_destructor*>(memory);
 					bool success = &detail::usertype_unique_alloc_destroy<element, actual> == pdx;
@@ -331,6 +341,7 @@ namespace sol { namespace stack {
 				}
 				return true;
 			}
+#if SOL_IS_OFF(SOL_USE_LUAU) // FIXME: no LUA_FILEHANDLE
 			else if constexpr (std::is_same_v<T, luaL_Stream*> || std::is_same_v<T, luaL_Stream>) {
 				if (lua_getmetatable(L_, index) == 0) {
 					type t = type_of(L_, index);
@@ -358,6 +369,7 @@ namespace sol { namespace stack {
 				}
 				return true;
 			}
+#endif
 			else if constexpr (meta::is_optional_v<T>) {
 				using ValueType = typename T::value_type;
 				(void)handler;
@@ -732,6 +744,10 @@ namespace sol { namespace stack {
 	};
 
 #endif // variant shenanigans
+
+#if !defined(__clang__) && defined(_MSC_VER) && _MSC_VER < 1950
+#pragma warning(pop)
+#endif
 
 }} // namespace sol::stack
 

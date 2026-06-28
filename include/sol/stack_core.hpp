@@ -24,6 +24,8 @@
 #ifndef SOL_STACK_CORE_HPP
 #define SOL_STACK_CORE_HPP
 
+#include "lua.h"
+#include "lualib.h"
 #include <sol/types.hpp>
 #include <sol/inheritance.hpp>
 #include <sol/error_handler.hpp>
@@ -65,11 +67,41 @@ namespace sol {
 		            detail::
 		                 as_pointer_tag> || meta::is_specialization_of_v<Tag, as_value_tag> || meta::is_specialization_of_v<Tag, as_unique_tag> || meta::is_specialization_of_v<Tag, as_table_tag> || std::is_same_v<Tag, as_reference_tag> || std::is_same_v<Tag, with_function_tag>;
 
+#if SOL_IS_ON(SOL_USE_LUAU)
+		inline constexpr int sol_userdata_tag = LUA_UTAG_LIMIT - 1;
+#endif
+
 		using lua_reg_table = luaL_Reg[64];
 
 		using unique_destructor = void (*)(void*);
 		using unique_tag = detail::inheritance_unique_cast_function;
 
+#if SOL_IS_ON(SOL_USE_LUAU)
+		inline void userdata_destroyer(lua_State* L, void* mem) {
+			lua_Destructor dtor = nullptr;
+			memcpy(&dtor, mem, sizeof(dtor));
+			if (dtor) {
+				dtor(L, mem);
+			}
+		}
+
+		inline void* alloc_newuserdata(lua_State* L, std::size_t bytesize) {
+			auto* ptr = reinterpret_cast<void**>(lua_newuserdatatagged(L, bytesize + sizeof(void*), sol_userdata_tag));
+			if (ptr) {
+				*ptr = 0;
+				return ptr + 1;
+			}
+			return nullptr;
+		}
+
+		inline void set_userdata_dtor_at(lua_State* L, int idx, lua_Destructor dtor) {
+			void* mem = lua_touserdatatagged(L, idx, sol_userdata_tag);
+			if (!mem) {
+				luaL_error(L, "Item at %d wasn't a userdata or didn't have the expected tag", idx);
+			}
+			memcpy(mem, &dtor, sizeof(dtor));
+		}
+#else
 		inline void* alloc_newuserdata(lua_State* L, std::size_t bytesize) {
 #if SOL_LUA_VERSION_I_ >= 504
 			return lua_newuserdatauv(L, bytesize, 1);
@@ -77,6 +109,7 @@ namespace sol {
 			return lua_newuserdata(L, bytesize);
 #endif
 		}
+#endif
 
 		constexpr std::uintptr_t align(std::size_t alignment, std::uintptr_t ptr, std::size_t& space) {
 			// this handles arbitrary alignments...
@@ -125,6 +158,7 @@ namespace sol {
 			}
 		}
 
+		template <bool dtor_pre_aligned = false>
 		inline void* align_usertype_pointer(void* ptr) {
 			using use_align = std::integral_constant<bool,
 #if SOL_IS_OFF(SOL_ALIGN_MEMORY)
@@ -133,6 +167,11 @@ namespace sol {
 			     (std::alignment_of<void*>::value > 1)
 #endif
 			     >;
+#if SOL_IS_ON(SOL_USE_LUAU)
+			if (!dtor_pre_aligned) {
+				ptr = reinterpret_cast<void**>(ptr) + 1;
+			}
+#endif
 			if (!use_align::value) {
 				return ptr;
 			}
@@ -207,7 +246,7 @@ namespace sol {
 			return align(std::alignment_of_v<T>, ptr, space);
 		}
 
-		template <typename T>
+		template <typename T, bool dtor_pre_aligned = false>
 		void* align_user(void* ptr) {
 			typedef std::integral_constant<bool,
 #if SOL_IS_OFF(SOL_ALIGN_MEMORY)
@@ -217,6 +256,11 @@ namespace sol {
 #endif
 			     >
 			     use_align;
+#if SOL_IS_ON(SOL_USE_LUAU)
+			if (!dtor_pre_aligned) {
+				ptr = reinterpret_cast<void**>(ptr) + 1;
+			}
+#endif
 			if (!use_align::value) {
 				return ptr;
 			}
@@ -339,7 +383,9 @@ namespace sol {
 				else {
 					luaL_error(L, "aligned allocation of userdata block (data section) for '%s' failed", detail::demangle<T>().c_str());
 				}
+#if SOL_IS_OFF(SOL_USE_LUAU)
 				return nullptr;
+#endif
 			}
 
 			T** pointerpointer = reinterpret_cast<T**>(pointer_adjusted);
@@ -393,7 +439,9 @@ namespace sol {
 				else {
 					luaL_error(L, "aligned allocation of userdata block (data section) for '%s' failed", detail::demangle<T>().c_str());
 				}
+#if SOL_IS_OFF(SOL_USE_LUAU)
 				return nullptr;
+#endif
 			}
 
 			pref = static_cast<T**>(pointer_adjusted);
@@ -404,7 +452,11 @@ namespace sol {
 		}
 
 		template <typename T>
+#if SOL_IS_ON(SOL_USE_LUAU)
+		T* user_allocate(lua_State* L, void(dtor)(void*)) {
+#else
 		T* user_allocate(lua_State* L) {
+#endif
 			typedef std::integral_constant<bool,
 #if SOL_IS_OFF(SOL_ALIGN_MEMORY)
 			     false
@@ -431,33 +483,48 @@ namespace sol {
 		}
 
 		template <typename T>
-		int usertype_alloc_destroy(lua_State* L) noexcept {
-			void* memory = lua_touserdata(L, 1);
+		void usertype_alloc_destroy_mem(lua_State* L, void* memory) noexcept {
 			memory = align_usertype_pointer(memory);
 			T** pdata = static_cast<T**>(memory);
 			T* data = *pdata;
 			std::allocator<T> alloc {};
 			std::allocator_traits<std::allocator<T>>::destroy(alloc, data);
+		}
+
+		template <typename T>
+		int usertype_alloc_destroy(lua_State* L) noexcept {
+			void* memory = lua_touserdata(L, 1);
+			usertype_alloc_destroy_mem<T>(L, memory);
 			return 0;
+		}
+
+		template <typename T>
+		void unique_destroy_mem(lua_State* L, void* memory) noexcept {
+			memory = align_usertype_unique_destructor(memory);
+			unique_destructor& dx = *static_cast<unique_destructor*>(memory);
+			memory = align_usertype_unique_tag<true>(memory);
+			(dx)(memory);
 		}
 
 		template <typename T>
 		int unique_destroy(lua_State* L) noexcept {
 			void* memory = lua_touserdata(L, 1);
-			memory = align_usertype_unique_destructor(memory);
-			unique_destructor& dx = *static_cast<unique_destructor*>(memory);
-			memory = align_usertype_unique_tag<true>(memory);
-			(dx)(memory);
+			unique_destroy_mem<T>(L, memory);
 			return 0;
+		}
+
+		template <typename T>
+		void user_alloc_destroy_mem(lua_State* L, void* memory) noexcept {
+			void* aligned_memory = align_user<T>(memory);
+			T* typed_memory = static_cast<T*>(aligned_memory);
+			std::allocator<T> alloc;
+			std::allocator_traits<std::allocator<T>>::destroy(alloc, typed_memory);
 		}
 
 		template <typename T>
 		int user_alloc_destroy(lua_State* L) noexcept {
 			void* memory = lua_touserdata(L, 1);
-			void* aligned_memory = align_user<T>(memory);
-			T* typed_memory = static_cast<T*>(aligned_memory);
-			std::allocator<T> alloc;
-			std::allocator_traits<std::allocator<T>>::destroy(alloc, typed_memory);
+			user_alloc_destroy_mem<T>(L, memory);
 			return 0;
 		}
 
@@ -470,12 +537,19 @@ namespace sol {
 		}
 
 		template <typename T>
+		void cannot_destroy_mem(lua_State* L, void* /* memory */) {
+			luaL_error(L,
+			           "cannot call the destructor for '%s': it is either hidden (protected/private) or removed with '= "
+			           "delete' and thusly this type is being destroyed without properly destroying, invoking undefined "
+			           "behavior: please bind a usertype and specify a custom destructor to define the behavior properly",
+			           detail::demangle<T>().data());
+		}
+
+
+		template <typename T>
 		int cannot_destroy(lua_State* L) {
-			return luaL_error(L,
-			     "cannot call the destructor for '%s': it is either hidden (protected/private) or removed with '= "
-			     "delete' and thusly this type is being destroyed without properly destroying, invoking undefined "
-			     "behavior: please bind a usertype and specify a custom destructor to define the behavior properly",
-			     detail::demangle<T>().data());
+			cannot_destroy_mem<T>(L, nullptr);
+			return 0;
 		}
 
 		template <typename T>
@@ -1325,6 +1399,31 @@ namespace sol {
 			return make_destructor<T>(std::is_destructible<T>());
 		}
 
+#if SOL_IS_ON(SOL_USE_LUAU)
+		template <typename T>
+		lua_Destructor make_destructor_mem(std::true_type) {
+			if constexpr (is_unique_usertype_v<T>) {
+				return &unique_destroy_mem<T>;
+			}
+			else if constexpr (!std::is_pointer_v<T>) {
+				return &usertype_alloc_destroy_mem<T>;
+			}
+			else {
+				return &cannot_destroy_mem<T>;
+			}
+		}
+
+		template <typename T>
+		lua_Destructor make_destructor_mem(std::false_type) {
+			return &cannot_destroy_mem<T>;
+		}
+
+		template <typename T>
+		lua_Destructor make_destructor_mem() {
+			return make_destructor_mem<T>(std::is_destructible<T>());
+		}
+#endif
+
 		struct no_comp {
 			template <typename A, typename B>
 			bool operator()(A&&, B&&) const {
@@ -1345,10 +1444,10 @@ namespace sol {
 
 		template <typename T>
 		int member_default_to_string(std::false_type, lua_State* L) {
-			return luaL_error(L,
-			     "cannot perform to_string on '%s': no 'to_string' overload in namespace, 'to_string' member "
-			     "function, or operator<<(ostream&, ...) present",
-			     detail::demangle<T>().data());
+			SOL_RETURN_LUAL_ERROR(L,
+			                      "cannot perform to_string on '%s': no 'to_string' overload in namespace, 'to_string' member "
+			                      "function, or operator<<(ostream&, ...) present",
+			                      detail::demangle<T>().data());
 		}
 
 		template <typename T>

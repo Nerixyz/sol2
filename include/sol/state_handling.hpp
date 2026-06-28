@@ -50,10 +50,23 @@ namespace sol {
 #endif
 	}
 
+
+#if SOL_IS_ON(SOL_USE_LUAU)
+	using PanicHandler = void (*)(lua_State*, int);
+
+	inline void default_at_panic(lua_State* L, int /* errcode */) {
+#else
+	using PanicHandler = lua_CFunction;
+
 	inline int default_at_panic(lua_State* L) {
+#endif
 #if SOL_IS_OFF(SOL_EXCEPTIONS)
 		(void)L;
+#if SOL_IS_ON(SOL_USE_LUAU)
+		return;
+#else
 		return -1;
+#endif // luau
 #else
 		size_t messagesize;
 		const char* message = lua_tolstring(L, -1, &messagesize);
@@ -90,13 +103,27 @@ namespace sol {
 		// std::cerr << msg;
 		// std::cerr << std::endl;
 #endif // Printing
+
+
 		return stack::push(L, msg);
 	}
 
-	inline void set_default_state(lua_State* L, lua_CFunction panic_function = &default_at_panic,
-	     lua_CFunction traceback_function = c_call<decltype(&default_traceback_error_handler), &default_traceback_error_handler>,
-	     exception_handler_function exf = detail::default_exception_handler) {
+#if SOL_IS_ON(SOL_USE_LUAU)
+	inline void set_tagged_userdata_dtors(lua_State* L) {
+		lua_setuserdatadtor(L, detail::sol_userdata_tag, detail::userdata_destroyer);
+	}
+#endif
+
+	inline void set_default_state(lua_State* L, PanicHandler panic_function = &default_at_panic,
+	                              lua_CFunction traceback_function = c_call<decltype(&default_traceback_error_handler), &default_traceback_error_handler>,
+	                              exception_handler_function exf = detail::default_exception_handler) {
+#if SOL_IS_ON(SOL_USE_LUAU)
+		lua_Callbacks* cbs = lua_callbacks(L);
+		cbs->panic = panic_function;
+		set_tagged_userdata_dtors(L);
+#else
 		lua_atpanic(L, panic_function);
+#endif
 		protected_function::set_default_handler(object(L, in_place, traceback_function));
 		set_default_exception_handler(L, exf);
 		register_main_thread(L);

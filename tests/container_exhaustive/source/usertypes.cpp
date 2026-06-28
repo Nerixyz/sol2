@@ -40,7 +40,14 @@ TEST_CASE("array") {
         assert(a:get(5) == nil)
 
     )"
-#if SOL_LUA_VERSION >= 502
+#if SOL_IS_ON(SOL_USE_LUAU)
+	                                                   R"(
+        -- __iter
+        for k, v in a do
+            assert(k == v)
+        end
+    )"
+#elif SOL_LUA_VERSION >= 502
 	                                                   R"(
         -- __pairs
         for k, v in pairs(a) do
@@ -129,7 +136,14 @@ TEST_CASE("vector") {
         assert(a:get(5) == nil)
 
     )"
-#if SOL_LUA_VERSION >= 502
+#if SOL_IS_ON(SOL_USE_LUAU)
+	                                                   R"(
+        -- __iter
+        for k, v in a do
+            assert(k == v)
+        end
+    )"
+#elif SOL_LUA_VERSION >= 502
 	                                                   R"(
         -- __pairs
         for k, v in pairs(a) do
@@ -220,7 +234,17 @@ TEST_CASE("map") {
         assert(a:get("baz") == 3)
         assert(a:get("bbb") == nil)
     )"
-#if SOL_LUA_VERSION >= 502
+#if SOL_IS_ON(SOL_USE_LUAU)
+	                                                   R"(
+        -- __iter
+        local order = ""
+        for k, v in a do
+            assert(({foo=1,bar=2,baz=3})[k] == v)
+            order = order .. k .. ","
+        end
+        assert(order == "bar,baz,foo,")
+    )"
+#elif SOL_LUA_VERSION >= 502
 	                                                   R"(
         -- __pairs
         local order = ""
@@ -308,7 +332,14 @@ TEST_CASE("unordered_map") {
         assert(a:get("bbb") == nil)
 
     )"
-#if SOL_LUA_VERSION >= 502
+#if SOL_IS_ON(SOL_USE_LUAU)
+	                                                   R"(
+        -- __iter
+        for k, v in a do
+            assert(({foo=1,bar=2,baz=3})[k] == v)
+        end
+    )"
+#elif SOL_LUA_VERSION >= 502
 	                                                   R"(
         -- __pairs
         for k, v in pairs(a) do

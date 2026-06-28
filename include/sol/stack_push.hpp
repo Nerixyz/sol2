@@ -24,6 +24,7 @@
 #ifndef SOL_STACK_PUSH_HPP
 #define SOL_STACK_PUSH_HPP
 
+#include <sol/demangle.hpp>
 #include <sol/stack_core.hpp>
 #include <sol/raii.hpp>
 #include <sol/optional.hpp>
@@ -171,7 +172,13 @@ namespace sol { namespace stack {
 		template <typename K, typename... Args>
 		static int push_keyed(lua_State* L, K&& k, Args&&... args) {
 			stack_detail::undefined_metatable fx(L, &k[0], &stack::stack_detail::set_undefined_methods_on<T>);
-			return push_fx(L, fx, std::forward<Args>(args)...);
+			int n = push_fx(L, fx, std::forward<Args>(args)...);
+#if SOL_IS_ON(SOL_USE_LUAU)
+			if constexpr (!std::is_pointer_v<T>) {
+				detail::set_userdata_dtor_at(L, -1, detail::make_destructor_mem<T>());
+			}
+#endif
+			return n;
 		}
 
 		template <typename Arg, typename... Args>
@@ -210,7 +217,9 @@ namespace sol { namespace stack {
 		template <typename K>
 		static int push_keyed(lua_State* L, K&& k, T* obj) {
 			stack_detail::undefined_metatable fx(L, &k[0], &stack::stack_detail::set_undefined_methods_on<U*>);
-			return push_fx(L, fx, obj);
+			int n = push_fx(L, fx, obj);
+			// Luau: Don't need to set destructor - type is a pointer.
+			return n;
 		}
 
 		template <typename Arg, typename... Args>
@@ -261,12 +270,17 @@ namespace sol { namespace stack {
 				detail::unique_destructor* fx = nullptr;
 				detail::unique_tag* id = nullptr;
 				actual* typed_memory = detail::usertype_unique_allocate<element, actual>(L, pointer_to_memory, fx, id);
+#if SOL_IS_ON(SOL_USE_LUAU)
+				detail::set_userdata_dtor_at(L, -1, detail::make_destructor_mem<T>());
+#endif
 				if (luaL_newmetatable(L, &usertype_traits<d::u<std::remove_cv_t<element>>>::metatable()[0]) == 1) {
 					detail::lua_reg_table registration_table {};
 					int index = 0;
 					detail::indexed_insert insert_callable(registration_table, index);
 					detail::insert_default_registrations<element>(insert_callable, detail::property_always_true);
+#if SOL_IS_OFF(SOL_USE_LUAU)
 					registration_table[index] = { to_string(meta_function::garbage_collect).c_str(), detail::make_destructor<T>() };
+#endif
 					luaL_setfuncs(L, registration_table, 0);
 				}
 				lua_setmetatable(L, -2);
@@ -550,7 +564,11 @@ namespace sol { namespace stack {
 #if SOL_IS_ON(SOL_SAFE_STACK_CHECK)
 			luaL_checkstack(L, 1, detail::not_enough_stack_space_generic);
 #endif // make sure stack doesn't overflow
+#if SOL_IS_ON(SOL_USE_LUAU)
+			lua_pushcclosure(L, func, "(lua_CFunction)", n);
+#else
 			lua_pushcclosure(L, func, n);
+#endif
 			return 1;
 		}
 	};
@@ -561,7 +579,11 @@ namespace sol { namespace stack {
 #if SOL_IS_ON(SOL_SAFE_STACK_CHECK)
 			luaL_checkstack(L, 1, detail::not_enough_stack_space_generic);
 #endif // make sure stack doesn't overflow
+#if SOL_IS_ON(SOL_USE_LUAU)
+			lua_pushcclosure(L, func, "(lua_CFunction)", n);
+#else
 			lua_pushcclosure(L, func, n);
+#endif
 			return 1;
 		}
 	};
@@ -573,7 +595,11 @@ namespace sol { namespace stack {
 #if SOL_IS_ON(SOL_SAFE_STACK_CHECK)
 			luaL_checkstack(L, 1, detail::not_enough_stack_space_generic);
 #endif // make sure stack doesn't overflow
+#if SOL_IS_ON(SOL_USE_LUAU)
+			lua_pushcclosure(L, func, "(lua_CFunction)", n);
+#else
 			lua_pushcclosure(L, func, n);
+#endif
 			return 1;
 		}
 	};
@@ -584,7 +610,11 @@ namespace sol { namespace stack {
 #if SOL_IS_ON(SOL_SAFE_STACK_CHECK)
 			luaL_checkstack(L, 1, detail::not_enough_stack_space_generic);
 #endif // make sure stack doesn't overflow
+#if SOL_IS_ON(SOL_USE_LUAU)
+			lua_pushcclosure(L, func, "(lua_CFunction)", n);
+#else
 			lua_pushcclosure(L, func, n);
+#endif
 			return 1;
 		}
 	};
@@ -596,7 +626,11 @@ namespace sol { namespace stack {
 #if SOL_IS_ON(SOL_SAFE_STACK_CHECK)
 			luaL_checkstack(L, 1, detail::not_enough_stack_space_generic);
 #endif // make sure stack doesn't overflow
+#if SOL_IS_ON(SOL_USE_LUAU)
+			lua_pushcclosure(L, cc.c_function, "(c_closure)", cc.upvalues);
+#else
 			lua_pushcclosure(L, cc.c_function, cc.upvalues);
+#endif
 			return 1;
 		}
 	};
@@ -668,18 +702,26 @@ namespace sol { namespace stack {
 			luaL_checkstack(L, 1, detail::not_enough_stack_space_userdata);
 #endif // make sure stack doesn't overflow
        // A dumb pusher
+#if SOL_IS_ON(SOL_USE_LUAU)
+			T* data = detail::user_allocate<T>(L, /*dtor=*/nullptr);
+#else
 			T* data = detail::user_allocate<T>(L);
+#endif
 			if (with_meta) {
 				// Make sure we have a plain GC set for this data
 #if SOL_IS_ON(SOL_SAFE_STACK_CHECK)
 				luaL_checkstack(L, 1, detail::not_enough_stack_space_generic);
 #endif // make sure stack doesn't overflow
+#if SOL_IS_ON(SOL_USE_LUAU)
+				detail::set_userdata_dtor_at(L, -1, &detail::user_alloc_destroy_mem<T>);
+#else
 				if (luaL_newmetatable(L, name) != 0) {
 					lua_CFunction cdel = detail::user_alloc_destroy<T>;
 					lua_pushcclosure(L, cdel, 0);
 					lua_setfield(L, -2, "__gc");
 				}
 				lua_setmetatable(L, -2);
+#endif
 			}
 			std::allocator<T> alloc {};
 			std::allocator_traits<std::allocator<T>>::construct(alloc, data, std::forward<Args>(args)...);

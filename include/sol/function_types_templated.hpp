@@ -38,7 +38,7 @@ namespace sol {
 
 		template <typename R, typename V, V, typename T>
 		inline int call_set_assignable(std::false_type, T&&, lua_State* L) {
-			return luaL_error(L, "cannot write to this type: copy assignment/constructor not available");
+			SOL_RETURN_LUAL_ERROR(L, "cannot write to this type: copy assignment/constructor not available");
 		}
 
 		template <typename R, typename V, V variable, typename T>
@@ -49,7 +49,7 @@ namespace sol {
 
 		template <typename R, typename V, V, typename T>
 		inline int call_set_variable(std::false_type, lua_State* L, T&&) {
-			return luaL_error(L, "cannot write to a const variable");
+			SOL_RETURN_LUAL_ERROR(L, "cannot write to a const variable");
 		}
 
 		template <typename R, typename V, V variable, typename T>
@@ -72,7 +72,7 @@ namespace sol {
 			case 2:
 				return call_set_variable<R, V, variable>(meta::neg<std::is_const<R>>(), L, mem);
 			default:
-				return luaL_error(L, "incorrect number of arguments to member variable function call");
+				SOL_RETURN_LUAL_ERROR(L, "incorrect number of arguments to member variable function call");
 			}
 		}
 

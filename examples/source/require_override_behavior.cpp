@@ -38,7 +38,11 @@ int LoadFileRequire(lua_State* L) {
 int main() {
 	std::cout << "=== require override behavior ==="
 	          << std::endl;
-
+#if SOL_IS_ON(SOL_USE_LUAU)
+	std::cout << "require() isn't supported with luau out of "
+	             "the box";
+	return 0;
+#else
 	sol::state lua;
 	// need base for print,
 	// need package for package/searchers/require
@@ -78,4 +82,5 @@ int main() {
 
 	// If we get here something went wrong...!
 	return -1;
+#endif
 }

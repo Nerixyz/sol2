@@ -24,6 +24,7 @@
 #ifndef SOL_REFERENCE_HPP
 #define SOL_REFERENCE_HPP
 
+#include "lua.h"
 #include <sol/types.hpp>
 #include <sol/stack_reference.hpp>
 
@@ -54,7 +55,11 @@ namespace sol {
 			// Remove each item one at a time using stack operations
 			// Probably slower, maybe, haven't benchmarked,
 			// but necessary
+#if SOL_IS_ON(SOL_USE_LUAU)
+			int index = rawindex > 0 ? rawindex : lua_absindex(L_, rawindex);
+#else
 			int index = lua_absindex(L_, rawindex);
+#endif
 			if (index < 0) {
 				index = lua_gettop(L_) + (index + 1);
 			}
@@ -437,7 +442,11 @@ namespace sol {
 		}
 
 		void deref(lua_State* L_) const noexcept {
+#if SOL_IS_ON(SOL_USE_LUAU)
+			lua_unref(L_, ref);
+#else
 			luaL_unref(L_, LUA_REGISTRYINDEX, ref);
+#endif
 		}
 
 		stateless_reference copy(lua_State* L_) const noexcept {

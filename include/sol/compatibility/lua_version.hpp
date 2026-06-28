@@ -52,7 +52,9 @@
 			#include <lua/lualib.h>
 		#else
 			#include <lua.h>
-			#include <lauxlib.h>
+			#if __has_include(<lauxlib.h>) // luau doesn't have this
+				#include <lauxlib.h>
+			#endif
 			#include <lualib.h>
 		#endif
 	}
@@ -100,6 +102,15 @@
 	#define SOL_USE_MOONJIT_I_ SOL_ON
 #else
 	#define SOL_USE_MOONJIT_I_ SOL_OFF
+#endif
+
+#if SOL_IS_ON(SOL_USE_LUAU) && !defined(LUA_VERSION_NUM)
+	#define LUA_VERSION_MAJOR_N	5
+	#define LUA_VERSION_MINOR_N	1
+	#define LUA_VERSION_RELEASE_N	0
+
+	#define LUA_VERSION_NUM  (LUA_VERSION_MAJOR_N * 100 + LUA_VERSION_MINOR_N)
+	#define LUA_VERSION_RELEASE_NUM  (LUA_VERSION_NUM * 100 + LUA_VERSION_RELEASE_N)
 #endif
 
 #if !defined(SOL_LUA_VERSION)
@@ -166,7 +177,7 @@
 		#define SOL_EXCEPTIONS_CATCH_ALL_I_ SOL_OFF
 	#endif
 #else
-	#if SOL_IS_ON(SOL_USE_LUAJIT) || SOL_IS_ON(SOL_USING_CXX_LUAJIT)
+	#if SOL_IS_ON(SOL_USE_LUAJIT) || SOL_IS_ON(SOL_USE_LUAU) || SOL_IS_ON(SOL_USING_CXX_LUAJIT)
 		#define SOL_EXCEPTIONS_CATCH_ALL_I_ SOL_DEFAULT_OFF
 	#elif SOL_IS_ON(SOL_USING_CXX_LUA)
 		// C++ builds of Lua will throw an exception to implement its `yield` behavior;

@@ -24,6 +24,7 @@
 #ifndef SOL_FUNCTION_TYPES_HPP
 #define SOL_FUNCTION_TYPES_HPP
 
+#include <sol/demangle.hpp>
 #include <sol/function_types_core.hpp>
 #include <sol/function_types_templated.hpp>
 #include <sol/function_types_stateless.hpp>
@@ -220,17 +221,29 @@ namespace sol {
 #if SOL_IS_ON(SOL_USE_NOEXCEPT_FUNCTION_TYPE)
 						if constexpr (std::is_nothrow_invocable_r_v<int, uFx, lua_State*>) {
 							detail::lua_CFunction_noexcept cf = &lua_c_noexcept_wrapper<true>;
+#if SOL_IS_ON(SOL_USE_LUAU)
+							lua_pushcclosure(L, reinterpret_cast<lua_CFunction>(cf), "lua_c_noexcept_wrapper", upvalues);
+#else
 							lua_pushcclosure(L, reinterpret_cast<lua_CFunction>(cf), upvalues);
+#endif
 						}
 						else
 #endif
 						{
 							lua_CFunction cf = &function_detail::lua_c_wrapper<true>;
+#if SOL_IS_ON(SOL_USE_LUAU)
+							lua_pushcclosure(L, cf, "lua_c_wrapper", upvalues);
+#else
 							lua_pushcclosure(L, cf, upvalues);
+#endif
 						}
 					}
 					else {
+#if SOL_IS_ON(SOL_USE_LUAU)
+						lua_pushcclosure(L, std::forward<Fx>(fx), detail::demangle<Fx>().c_str(), 0);
+#else
 						lua_pushcclosure(L, std::forward<Fx>(fx), 0);
+#endif
 					}
 				}
 				else {
@@ -240,15 +253,27 @@ namespace sol {
 #if SOL_IS_ON(SOL_USE_NOEXCEPT_FUNCTION_TYPE)
 					if constexpr (std::is_nothrow_invocable_r_v<int, uFx, lua_State*>) {
 						detail::lua_CFunction_noexcept cf = &lua_c_noexcept_wrapper<is_yielding>;
+#if SOL_IS_ON(SOL_USE_LUAU)
+						lua_pushcclosure(L, reinterpret_cast<lua_CFunction>(cf), "lua_c_noexcept_wrapper", upvalues);
+#else
 						lua_pushcclosure(L, reinterpret_cast<lua_CFunction>(cf), upvalues);
+#endif
 					}
 					else {
 						lua_CFunction cf = &function_detail::lua_c_wrapper<is_yielding>;
+#if SOL_IS_ON(SOL_USE_LUAU)
+						lua_pushcclosure(L, cf, "lua_c_wrapper", upvalues);
+#else
 						lua_pushcclosure(L, cf, upvalues);
+#endif
 					}
 #else
 					lua_CFunction cf = &function_detail::lua_c_wrapper<is_yielding>;
+#if SOL_IS_ON(SOL_USE_LUAU)
+					lua_pushcclosure(L, cf, "lua_c_wrapper", upvalues);
+#else
 					lua_pushcclosure(L, cf, upvalues);
+#endif
 #endif
 				}
 			}

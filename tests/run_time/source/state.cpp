@@ -80,6 +80,8 @@ const char* string_reader(lua_State* L, void* vpstr, size_t* sz) {
 	return srl.str.c_str();
 }
 
+// No built in require.
+#if SOL_IS_OFF(SOL_USE_LUAU)
 TEST_CASE("state/require_file", "opening files as 'requires'") {
 	static const char file_require_file[] = "./tmp_thingy.lua";
 	static const char file_require_file_user[] = "./tmp_thingy_user.lua";
@@ -232,7 +234,10 @@ TEST_CASE("state/multi require", "make sure that requires transfers across hand-
 	// REQUIRE(thingy1 == thingy3);
 	REQUIRE((thingy2 == thingy3));
 }
+#endif
 
+// No io library.
+#if SOL_IS_OFF(SOL_USE_LUAU)
 TEST_CASE("state/require-safety", "make sure unrelated modules aren't harmed in using requires") {
 	sol::state lua;
 	lua.open_libraries();
@@ -247,6 +252,7 @@ return 'test3')");
 	REQUIRE(t2 == "test2");
 	REQUIRE(t3 == "test3");
 }
+#endif
 
 TEST_CASE("state/leak check", "make sure there are no humongous memory leaks in iteration") {
 #if 0
@@ -386,6 +392,7 @@ TEST_CASE("state/copy and move", "ensure state can be properly copied and moved"
 	REQUIRE(a == 1);
 }
 
+#if SOL_IS_OFF(SOL_USE_LUAU)
 TEST_CASE("state/requires-reload", "ensure that reloading semantics do not cause a crash") {
 	sol::state lua;
 	sol::stack_guard luasg(lua);
@@ -394,6 +401,7 @@ TEST_CASE("state/requires-reload", "ensure that reloading semantics do not cause
 	lua.require_script("test2", "require 'io'\nreturn 'test2'");
 	lua.safe_script("require 'io'\nreturn 'test3'");
 }
+#endif
 
 TEST_CASE("state/script, do, and load", "test success and failure cases for loading and running scripts") {
 	const static std::string bad_syntax = "weird\n%$@symb\nols";
@@ -492,6 +500,8 @@ TEST_CASE("state/script, do, and load", "test success and failure cases for load
 		REQUIRE(ar == 21);
 		clean_files();
 	}
+	// Luau doesn't support readers.
+#if SOL_IS_OFF(SOL_USE_LUAU)
 	SECTION("load") {
 		sol::state lua;
 		sol::stack_guard luasg(lua);
@@ -521,6 +531,7 @@ TEST_CASE("state/script, do, and load", "test success and failure cases for load
 		REQUIRE(ar == 21);
 		clean_files();
 	}
+#endif
 	SECTION("load_string (text)") {
 		sol::state lua;
 		sol::stack_guard luasg(lua);
@@ -544,6 +555,8 @@ TEST_CASE("state/script, do, and load", "test success and failure cases for load
 		REQUIRE(ar == 21);
 		clean_files();
 	}
+	// Luau doesn't support readers.
+#if SOL_IS_OFF(SOL_USE_LUAU)
 	SECTION("load (text)") {
 		sol::state lua;
 		sol::stack_guard luasg(lua);
@@ -573,6 +586,7 @@ TEST_CASE("state/script, do, and load", "test success and failure cases for load
 		REQUIRE(ar == 21);
 		clean_files();
 	}
+#endif
 	SECTION("script_file") {
 		sol::state lua;
 		sol::stack_guard luasg(lua);

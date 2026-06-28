@@ -24,6 +24,7 @@
 #ifndef SOL_FUNCTION_HPP
 #define SOL_FUNCTION_HPP
 
+#include "lualib.h"
 #include <sol/stack.hpp>
 #include <sol/unsafe_function.hpp>
 #include <sol/protected_function.hpp>
@@ -130,9 +131,13 @@ namespace sol {
 		template <typename Allocator>
 		struct unqualified_getter<basic_bytecode<Allocator>> {
 			static basic_bytecode<Allocator> get(lua_State* L, int index, record& tracking) {
+#if SOL_IS_ON(SOL_USE_LUAU)
+				luaL_error(L, "Getting bytecode of a function is not supported with Luau");
+#else
 				tracking.use(1);
 				stack_function sf(L, index);
 				return sf.dump(&dump_panic_on_error);
+#endif
 			}
 		};
 	} // namespace stack

@@ -26,6 +26,12 @@
 
 #include <sol/stack_check_unqualified.hpp>
 
+// MSVC <14.50 warns about unreachable code here. But this code depends on template parameters.
+#if !defined(__clang__) && defined(_MSC_VER) && _MSC_VER < 1950
+#pragma waring(push)
+#pragma warning(disable : 4702)
+#endif
+
 namespace sol { namespace stack {
 
 	template <typename X, type expected, typename>
@@ -45,7 +51,11 @@ namespace sol { namespace stack {
 						handler(L, index, type::userdata, indextype, "value is not a userdata");
 						return false;
 					}
+#if SOL_IS_ON(SOL_USE_LUAU)
+					void* memory = lua_touserdatatagged(L, index, detail::sol_userdata_tag);
+#else
 					void* memory = lua_touserdata(L, index);
+#endif
 					memory = detail::align_usertype_unique_destructor(memory);
 					detail::unique_destructor& pdx = *static_cast<detail::unique_destructor*>(memory);
 					if (&detail::usertype_unique_alloc_destroy<element, no_cv_X> == pdx) {
@@ -85,5 +95,9 @@ namespace sol { namespace stack {
 		}
 	};
 }} // namespace sol::stack
+
+#if !defined(__clang__) && defined(_MSC_VER) && _MSC_VER < 1950
+#pragma warning(pop)
+#endif
 
 #endif // SOL_STACK_CHECK_HPP

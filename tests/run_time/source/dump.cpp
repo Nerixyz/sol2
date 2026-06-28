@@ -29,6 +29,9 @@
 #include <vector>
 #include <deque>
 
+// Luau doesn't support dumping bytecode.
+#if SOL_IS_OFF(SOL_USE_LUAU)
+
 int dump_always_fail_number = -32;
 
 int dump_always_fail(lua_State*, const void*, size_t, void*) {
@@ -119,3 +122,5 @@ TEST_CASE("dump/different containers", "test that dump inserter works for variou
 		REQUIRE(std::equal(bytecode_dump.cbegin(), bytecode_dump.cend(), deque_dump.cbegin(), deque_dump.cend()));
 	}
 }
+
+#endif

@@ -9,9 +9,44 @@ sol2 (sol2, version |version|)
 
 When you need to hit the ground running with Lua and C++, `sol`_ is the go-to framework for high-performance binding with an easy to use API.
 
+solpp
+-----
+
 `solpp <https://github.com/nerixyz/sol2>`_ is a fork that attempts to deliver some improvements over upstream.
 As of December 2025, the last commit was nine months ago, yet there are bugs with active PRs containing fixes that aren't merged.
 
+additional features
+^^^^^^^^^^^^^^^^^^^
+
+- Lua 5.5 support
+- Luau support
+- Added CI with more configurations (more compiler and Lua versions)
+- Enabled and fixed the ``run_time`` tests.
+
+Luau support
+^^^^^^^^^^^^
+
+Luau is in some aspects significantly different from Lua 5.1 (see `Differences from Lua <https://luau.org/compatibility/#differences-from-lua>`_).
+These are the differences and important points for sol users:
+
+- If the target ``lua_State`` was not created by sol, you need to use ``sol::state_view::init_userdata_tags()`` on the state at the start.
+- Currently, sol uses ``LUA_UTAG_LIMIT - 1`` as the tag for its usertypes. This is mainly due to a limitation of Luau to change the destructor for the inline userdata.
+- Luau doesn't have a built-in ``require()`` implementation, hence, sol's APIs for this won't work.
+- Most :doc:`api/policies` won't work, because ``lua_setfenv`` can't be used on userdata.
+- Dumping function bytecode is unsupported.
+- The ``lua_Reader`` APIs are unsupported.
+- Due to the absence of ``__gc``, the destructors can't be customized with ``sol::meta_function::garbage_collect``.
+- Once a usertype is defined in a state (``new_usertype``), it can't be removed, because the destructors can't modify the Luau state.
+
+
+The following features are missing and would be nice to have:
+
+- Vectors and buffers can't be used from sol.
+- Ability to specify the userdata tag for certain types. This could also the type to be marked as non-dynamic.
+- Userdata could use a table for ``__index`` if possible. Needs to be profiled, but Luau claims this is faster. An even faster method would be to use atoms.
+- Userdata could support ``lua_UserdataDirectFieldGet```. Though it's tricky to detect when that's possible.
+- Provide a sane implementation of ``require()`` out of the box.
+- The bytecode produced from ``script()`` and friends can't be customized (e.g. optimization level).
 
 get going:
 ----------

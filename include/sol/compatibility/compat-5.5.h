@@ -1,21 +1,7 @@
 #ifndef NOT_KEPLER_PROJECT_COMPAT55_H_
 #define NOT_KEPLER_PROJECT_COMPAT55_H_
 
-#if defined(__cplusplus) && !defined(COMPAT53_LUA_CPP)
-extern "C" {
-#endif
-#if __has_include(<lua/lua.h>)
-  #include <lua/lua.h>
-  #include <lua/lauxlib.h>
-  #include <lua/lualib.h>
-#else
-  #include <lua.h>
-  #include <lauxlib.h>
-  #include <lualib.h>
-#endif
-#if defined(__cplusplus) && !defined(COMPAT53_LUA_CPP)
-}
-#endif
+#include <sol/compatibility/lua_version.hpp>
 
 // Lua 5.5 AND ABOVE
 #if defined(LUA_VERSION_NUM) && LUA_VERSION_NUM >= 505

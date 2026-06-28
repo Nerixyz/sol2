@@ -13,6 +13,11 @@ bool is_file_std_out(sol::table data) {
 }
 
 int main() {
+#if SOL_IS_ON(SOL_USE_LUAU)
+	std::cout
+	     << "Unsupported on luau, as luau doesn't have io\n";
+	return 0;
+#else
 	sol::state lua;
 	lua.open_libraries(sol::lib::base, sol::lib::io);
 
@@ -20,4 +25,5 @@ int main() {
 	lua.script("assert(is_std_out{ file = io.stdout })");
 
 	return 0;
+#endif
 }

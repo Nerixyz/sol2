@@ -28,6 +28,11 @@
 #include <sol/call.hpp>
 #include <sol/function_types_core.hpp>
 
+#if !defined(__clang__) && defined(_MSC_VER) && _MSC_VER < 1950
+#pragma waring(push)
+#pragma warning(disable : 4702)
+#endif
+
 namespace sol { namespace function_detail {
 	template <int start_skew, typename... Functions>
 	struct overloaded_function {
@@ -61,5 +66,9 @@ namespace sol { namespace function_detail {
 		}
 	};
 }} // namespace sol::function_detail
+
+#if SOL_IS_OFF(SOL_COMPILER_CLANG) && SOL_IS_ON(SOL_COMPILER_VCXX)
+#pragma warning(pop)
+#endif
 
 #endif // SOL_FUNCTION_TYPES_OVERLOAD_HPP

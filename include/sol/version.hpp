@@ -695,6 +695,18 @@
 	#define SOL_USING_CXX_LUAJIT_I_ SOL_DEFAULT_OFF
 #endif
 
+#if defined(SOL_LUAU)
+	#if (SOL_LUAU != 0)
+		#define SOL_USE_LUAU_I_ SOL_ON
+	#else
+		#define SOL_USE_LUAU_I_ SOL_OFF
+	#endif
+#elif __has_include(<Luau/Bytecode.h>) || defined(SOL_USING_CXX_LUAU)
+	#define SOL_USE_LUAU_I_ SOL_ON
+#else
+	#define SOL_USE_LUAU_I_ SOL_DEFAULT_OFF
+#endif
+
 #if defined(SOL_NO_LUA_HPP)
 	#if (SOL_NO_LUA_HPP != 0)
 		#define SOL_USE_LUA_HPP_I_ SOL_OFF

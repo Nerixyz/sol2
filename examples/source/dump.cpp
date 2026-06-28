@@ -7,6 +7,11 @@
 int main() {
 	std::cout << "=== dump (serialize between states) ==="
 	          << std::endl;
+#if SOL_IS_ON(SOL_USE_LUAU)
+	std::cout << "Unsupported on luau, because it doesn't have "
+	             "lua_dump()\n";
+	return 0;
+#else
 
 	// 2 states, transferring function from 1 to another
 	sol::state lua;
@@ -42,4 +47,5 @@ int main() {
 	SOL_ASSERT(v == 25557);
 
 	return 0;
+#endif
 }

@@ -56,6 +56,9 @@ enumerations
 	    io,
 	    ffi,
 	    jit,
+	    buffer, // Luau
+	    class_, // Luau
+	    vector, // Luau
 	    count // do not use
 	};
 

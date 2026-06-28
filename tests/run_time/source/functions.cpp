@@ -303,7 +303,7 @@ TEST_CASE("functions/function_result and protected_function_result",
 	     sol::script_pass_on_error);
 	REQUIRE(result1.valid());
 
-	auto nontrampolinefx = [](lua_State* L) -> int { return luaL_error(L, "x"); };
+	auto nontrampolinefx = [](lua_State* L) -> int { SOL_RETURN_LUAL_ERROR(L, "x"); };
 	lua_CFunction c_nontrampolinefx = nontrampolinefx;
 	lua.set("nontrampoline", c_nontrampolinefx);
 

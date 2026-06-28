@@ -124,7 +124,7 @@ namespace sol {
 				call_exception_handler(L, optional<const std::exception&>(nullopt), "caught (...) exception");
 			}
 #endif
-			return lua_error(L);
+			SOL_RETURN_LUA_ERROR(L);
 #endif // Safe exceptions
 		}
 
@@ -174,7 +174,7 @@ namespace sol {
 					call_exception_handler(L, optional<const std::exception&>(nullopt), "caught (...) exception");
 				}
 #endif
-				return lua_error(L);
+				SOL_RETURN_LUA_ERROR(L);
 #endif
 			}
 		}

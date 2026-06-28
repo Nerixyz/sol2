@@ -558,6 +558,10 @@ TEST_CASE("containers/pointer types", "check that containers with unique usertyp
 TEST_CASE("containers/keep alive", "containers are kept alive even if they are returned as a temporary") {
 	sol::state lua;
 	lua.open_libraries(sol::lib::base, sol::lib::table);
+#if SOL_IS_ON(SOL_USE_LUAU)
+	lua["collectgarbage"] = [](sol::this_state L) { lua_gc(L.lua_state(), LUA_GCCOLLECT, 0); };
+#endif
+
 
 #define PATTERN() 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
 	lua["get_collection"] = []() {
@@ -599,7 +603,9 @@ TEST_CASE("containers/keep alive", "containers are kept alive even if they are r
 	     R"lua(
 print("LET'S GET IT BAYBEEE!")
 	)lua"
-#if SOL_LUA_VERSION < 502
+#if SOL_IS_ON(SOL_USE_LUAU)
+	     "for i, v in get_collection() do"
+#elif SOL_LUA_VERSION < 502
 	     "for i, v in get_collection():pairs() do"
 #else
 	     "for i, v in pairs(get_collection()) do"
@@ -614,6 +620,7 @@ end
 collectgarbage()
 collectgarbage()
 print("YEEEAH!")
-)lua");
+)lua"
+	);
 	REQUIRE_FALSE(maybe_error.has_value());
 }

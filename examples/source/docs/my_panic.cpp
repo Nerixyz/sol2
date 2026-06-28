@@ -15,7 +15,12 @@ inline void my_panic(sol::optional<std::string> maybe_msg) {
 }
 
 int main(int, char*[]) {
+#if SOL_IS_ON(SOL_USE_LUAU)
+	std::cout << "Supported on luau, but needs a different "
+	             "trampoline.\n";
+#else
 	sol::state lua(sol::c_call<decltype(&my_panic), &my_panic>);
+#endif
 	// or, if you already have a lua_State* L
 	// lua_atpanic( L, sol::c_call<decltype(&my_panic),
 	// &my_panic> ); or, with state/state_view: sol::state_view

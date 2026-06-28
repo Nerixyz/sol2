@@ -29,6 +29,8 @@
 #include <string>
 #include <limits>
 
+// lua_setuservalue doesn't work on usertypes in Luau.
+#if SOL_IS_OFF(SOL_USE_LUAU)
 TEST_CASE("policies/self", "ensure we return a direct reference to the lua userdata rather than creating a new one") {
 	struct vec2 {
 		float x = 20.f;
@@ -249,6 +251,7 @@ collectgarbage()
 	REQUIRE(holders_destroyed[0] == h);
 	REQUIRE(depends_on_references_destroyed[0] == dor);
 }
+#endif
 
 int always_return_24(lua_State* L, int) {
 	return sol::stack::push(L, 24);

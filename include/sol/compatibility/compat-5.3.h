@@ -1,24 +1,11 @@
 #ifndef KEPLER_PROJECT_COMPAT53_H_
 #define KEPLER_PROJECT_COMPAT53_H_
 
+#include <cstdio>
 #include <stddef.h>
 #include <limits.h>
 #include <string.h>
-#if defined(__cplusplus) && !defined(COMPAT53_LUA_CPP)
-extern "C" {
-#endif
-#if __has_include(<lua/lua.h>)
-  #include <lua/lua.h>
-  #include <lua/lauxlib.h>
-  #include <lua/lualib.h>
-#else
-  #include <lua.h>
-  #include <lauxlib.h>
-  #include <lualib.h>
-#endif
-#if defined(__cplusplus) && !defined(COMPAT53_LUA_CPP)
-}
-#endif
+#include <sol/compatibility/lua_version.hpp>
 
 #ifndef COMPAT53_PREFIX
 /* we chose this name because many other lua bindings / libs have
@@ -105,7 +92,7 @@ extern "C" {
 #  define LUA_ERRGCMM (LUA_ERRERR + 2)
 #endif /* LUA_ERRGCMM define */
 
-#if !defined(MOONJIT_VERSION)
+#if !defined(MOONJIT_VERSION) && !SOL_IS_ON(SOL_USE_LUAU)
 typedef size_t lua_Unsigned;
 #endif
 
@@ -126,8 +113,10 @@ typedef struct luaL_Stream {
 	FILE *f;
 } luaL_Stream;
 
+#if !SOL_IS_ON(SOL_USE_LUAU)
 #define lua_absindex COMPAT53_CONCAT(COMPAT53_PREFIX, _absindex)
 COMPAT53_API int lua_absindex(lua_State *L, int i);
+#endif
 
 #define lua_arith COMPAT53_CONCAT(COMPAT53_PREFIX, _arith)
 COMPAT53_API void lua_arith(lua_State *L, int op);
@@ -165,24 +154,44 @@ COMPAT53_API void lua_len(lua_State *L, int i);
 #  define lua_pushglobaltable(L) \
   lua_pushvalue((L), LUA_GLOBALSINDEX)
 #endif
+
+#if SOL_IS_OFF(SOL_USE_LUAU)
 #define lua_rawgetp COMPAT53_CONCAT(COMPAT53_PREFIX, _rawgetp)
 COMPAT53_API int lua_rawgetp(lua_State *L, int i, const void *p);
 
 #define lua_rawsetp COMPAT53_CONCAT(COMPAT53_PREFIX, _rawsetp)
 COMPAT53_API void lua_rawsetp(lua_State *L, int i, const void *p);
+#endif
 
 #define lua_rawlen(L, i) lua_objlen((L), (i))
 
+#if SOL_IS_OFF(SOL_USE_LUAU)
 #define lua_tointeger(L, i) lua_tointegerx((L), (i), NULL)
 
 #define lua_tonumberx COMPAT53_CONCAT(COMPAT53_PREFIX, _tonumberx)
 COMPAT53_API lua_Number lua_tonumberx(lua_State *L, int i, int *isnum);
+#endif
 
 #define luaL_checkversion COMPAT53_CONCAT(COMPAT53_PREFIX, L_checkversion)
 COMPAT53_API void luaL_checkversion(lua_State *L);
 
+#if SOL_IS_ON(SOL_USE_LUAU) // no lua_Reader
+#define lua_load COMPAT53_CONCAT(COMPAT53_PREFIX, _load_53)
+COMPAT53_API int lua_load(lua_State* L, void* data, const char* source, const char* mode);
+
+#define luaL_loadbuffer COMPAT53_CONCAT(COMPAT53_PREFIX, L_loadbuffer_53)
+COMPAT53_API int luaL_loadbuffer(lua_State* L, const char* buff, size_t sz, const char* name);
+
+#define luaL_loadstring COMPAT53_CONCAT(COMPAT53_PREFIX, L_loadstring_53)
+COMPAT53_API int luaL_loadstring(lua_State* L, const char* buff);
+
+#ifndef luaL_dostring
+#define luaL_dostring(L, s) (luaL_loadstring(L, s) || lua_pcall(L, 0, LUA_MULTRET, 0))
+#endif
+#else
 #define lua_load COMPAT53_CONCAT(COMPAT53_PREFIX, _load_53)
 COMPAT53_API int lua_load(lua_State *L, lua_Reader reader, void *data, const char* source, const char* mode);
+#endif
 
 #define luaL_loadfilex COMPAT53_CONCAT(COMPAT53_PREFIX, L_loadfilex)
 COMPAT53_API int luaL_loadfilex(lua_State *L, const char *filename, const char *mode);
@@ -190,8 +199,10 @@ COMPAT53_API int luaL_loadfilex(lua_State *L, const char *filename, const char *
 #define luaL_loadbufferx COMPAT53_CONCAT(COMPAT53_PREFIX, L_loadbufferx)
 COMPAT53_API int luaL_loadbufferx(lua_State *L, const char *buff, size_t sz, const char *name, const char *mode);
 
+#if SOL_IS_OFF(SOL_USE_LUAU)
 #define luaL_checkstack COMPAT53_CONCAT(COMPAT53_PREFIX, L_checkstack_53)
 COMPAT53_API void luaL_checkstack(lua_State *L, int sp, const char *msg);
+#endif
 
 #define luaL_getsubtable COMPAT53_CONCAT(COMPAT53_PREFIX, L_getsubtable)
 COMPAT53_API int luaL_getsubtable(lua_State* L, int i, const char *name);
@@ -208,8 +219,10 @@ COMPAT53_API void luaL_setmetatable(lua_State *L, const char *tname);
 #define luaL_testudata COMPAT53_CONCAT(COMPAT53_PREFIX, L_testudata)
 COMPAT53_API void *luaL_testudata(lua_State *L, int i, const char *tname);
 
+#if SOL_IS_OFF(SOL_USE_LUAU)
 #define luaL_traceback COMPAT53_CONCAT(COMPAT53_PREFIX, L_traceback)
 COMPAT53_API void luaL_traceback(lua_State *L, lua_State *L1, const char *msg, int level);
+#endif
 
 #define luaL_fileresult COMPAT53_CONCAT(COMPAT53_PREFIX, L_fileresult)
 COMPAT53_API int luaL_fileresult(lua_State *L, int stat, const char *fname);
@@ -222,8 +235,8 @@ COMPAT53_API int luaL_execresult(lua_State *L, int stat);
 #define lua_pcallk(L, na, nr, err, ctx, cont) \
   ((void)(ctx), (void)(cont), lua_pcall((L), (na), (nr), (err)))
 
-#define lua_resume(L, from, nargs) \
-  ((void)(from), lua_resume((L), (nargs)))
+#if SOL_IS_OFF(SOL_USE_LUAU)
+#define lua_resume(L, from, nargs) ((void)(from), lua_resume((L), (nargs)))
 
 #define luaL_buffinit COMPAT53_CONCAT(COMPAT53_PREFIX, _buffinit_53)
 COMPAT53_API void luaL_buffinit(lua_State *L, luaL_Buffer_53 *B);
@@ -243,20 +256,24 @@ COMPAT53_API void luaL_pushresult(luaL_Buffer_53 *B);
 #undef luaL_buffinitsize
 #define luaL_buffinitsize(L, B, s) \
   (luaL_buffinit((L), (B)), luaL_prepbuffsize((B), (s)))
+#endif
 
 #undef luaL_prepbuffer
 #define luaL_prepbuffer(B) \
   luaL_prepbuffsize((B), LUAL_BUFFERSIZE)
 
+#if SOL_IS_OFF(SOL_USE_LUAU)
 #undef luaL_addchar
 #define luaL_addchar(B, c) \
   ((void)((B)->nelems < (B)->capacity || luaL_prepbuffsize((B), 1)), \
    ((B)->ptr[(B)->nelems++] = (c)))
+#endif
 
 #undef luaL_addsize
 #define luaL_addsize(B, s) \
   ((B)->nelems += (s))
 
+#if SOL_IS_OFF(SOL_USE_LUAU)
 #undef luaL_addstring
 #define luaL_addstring(B, s) \
   luaL_addlstring((B), (s), strlen((s)))
@@ -264,6 +281,7 @@ COMPAT53_API void luaL_pushresult(luaL_Buffer_53 *B);
 #undef luaL_pushresultsize
 #define luaL_pushresultsize(B, s) \
   (luaL_addsize((B), (s)), luaL_pushresult((B)))
+#endif
 
 #if defined(LUA_COMPAT_APIINTCASTS)
 #define lua_pushunsigned(L, n) \
@@ -304,8 +322,10 @@ COMPAT53_API int lua_geti(lua_State *L, int index, lua_Integer i);
 #define lua_isinteger COMPAT53_CONCAT(COMPAT53_PREFIX, _isinteger)
 COMPAT53_API int lua_isinteger(lua_State *L, int index);
 
+#if SOL_IS_OFF(SOL_USE_LUAU)
 #define lua_tointegerx COMPAT53_CONCAT(COMPAT53_PREFIX, _tointegerx_53)
 COMPAT53_API lua_Integer lua_tointegerx(lua_State *L, int i, int *isnum);
+#endif
 
 #define lua_numbertointeger(n, p) \
   ((*(p) = (lua_Integer)(n)), 1)
@@ -325,8 +345,10 @@ COMPAT53_API void lua_seti(lua_State *L, int index, lua_Integer i);
 #define lua_stringtonumber COMPAT53_CONCAT(COMPAT53_PREFIX, _stringtonumber)
 COMPAT53_API size_t lua_stringtonumber(lua_State *L, const char *s);
 
+#if !SOL_IS_ON(SOL_USE_LUAU)
 #define luaL_tolstring COMPAT53_CONCAT(COMPAT53_PREFIX, L_tolstring)
 COMPAT53_API const char *luaL_tolstring(lua_State *L, int idx, size_t *len);
+#endif
 
 #define luaL_getmetafield(L, o, e) \
   (luaL_getmetafield((L), (o), (e)) ? lua_type((L), -1) : LUA_TNIL)

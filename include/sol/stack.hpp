@@ -302,12 +302,13 @@ namespace sol {
 			}
 			luaL_getmetatable(L, key.data());
 			auto pn = pop_n(L, 1);
-			if (lua_compare(L, -1, index, LUA_OPEQ) != 1) {
+			if (lua_rawequal(L, -1, index) != 1) {
 				return call_syntax::dot;
 			}
 			return call_syntax::colon;
 		}
 
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		inline void script(
 		     lua_State* L, lua_Reader reader, void* data, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			detail::typical_chunk_name_t basechunkname = {};
@@ -316,6 +317,7 @@ namespace sol {
 				lua_error(L);
 			}
 		}
+#endif
 
 		inline void script(
 		     lua_State* L, const string_view& code, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {

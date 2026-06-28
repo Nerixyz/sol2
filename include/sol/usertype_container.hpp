@@ -28,6 +28,11 @@
 #include <sol/stack.hpp>
 #include <sol/object.hpp>
 
+#if !defined(__clang__) && defined(_MSC_VER) && _MSC_VER < 1950
+#pragma waring(push)
+#pragma warning(disable : 4702)
+#endif
+
 namespace sol {
 
 	template <typename T>
@@ -404,68 +409,71 @@ namespace sol {
 			typedef lua_nil_t value_type;
 
 			static int at(lua_State* L_) {
-				return luaL_error(L_, "sol: cannot call 'at(index)' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
+				SOL_RETURN_LUAL_ERROR(L_, "sol: cannot call 'at(index)' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
 			}
 
 			static int get(lua_State* L_) {
-				return luaL_error(L_, "sol: cannot call 'get(key)' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
+				SOL_RETURN_LUAL_ERROR(L_, "sol: cannot call 'get(key)' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
 			}
 
 			static int index_get(lua_State* L_) {
-				return luaL_error(L_, "sol: cannot call 'container[key]' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
+				SOL_RETURN_LUAL_ERROR(
+				     L_, "sol: cannot call 'container[key]' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
 			}
 
 			static int set(lua_State* L_) {
-				return luaL_error(L_, "sol: cannot call 'set(key, value)' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
+				SOL_RETURN_LUAL_ERROR(
+				     L_, "sol: cannot call 'set(key, value)' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
 			}
 
 			static int index_set(lua_State* L_) {
-				return luaL_error(
+				SOL_RETURN_LUAL_ERROR(
 				     L_, "sol: cannot call 'container[key] = value' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
 			}
 
 			static int add(lua_State* L_) {
-				return luaL_error(L_, "sol: cannot call 'add' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
+				SOL_RETURN_LUAL_ERROR(L_, "sol: cannot call 'add' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
 			}
 
 			static int insert(lua_State* L_) {
-				return luaL_error(L_, "sol: cannot call 'insert' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
+				SOL_RETURN_LUAL_ERROR(L_, "sol: cannot call 'insert' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
 			}
 
 			static int find(lua_State* L_) {
-				return luaL_error(L_, "sol: cannot call 'find' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
+				SOL_RETURN_LUAL_ERROR(L_, "sol: cannot call 'find' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
 			}
 
 			static int index_of(lua_State* L_) {
-				return luaL_error(L_, "sol: cannot call 'index_of' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
+				SOL_RETURN_LUAL_ERROR(L_, "sol: cannot call 'index_of' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
 			}
 
 			static int size(lua_State* L_) {
-				return luaL_error(L_, "sol: cannot call 'end' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
+				SOL_RETURN_LUAL_ERROR(L_, "sol: cannot call 'end' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
 			}
 
 			static int clear(lua_State* L_) {
-				return luaL_error(L_, "sol: cannot call 'clear' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
+				SOL_RETURN_LUAL_ERROR(L_, "sol: cannot call 'clear' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
 			}
 
 			static int empty(lua_State* L_) {
-				return luaL_error(L_, "sol: cannot call 'empty' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
+				SOL_RETURN_LUAL_ERROR(L_, "sol: cannot call 'empty' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
 			}
 
 			static int erase(lua_State* L_) {
-				return luaL_error(L_, "sol: cannot call 'erase' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
+				SOL_RETURN_LUAL_ERROR(L_, "sol: cannot call 'erase' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
 			}
 
 			static int next(lua_State* L_) {
-				return luaL_error(L_, "sol: cannot call 'next' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
+				SOL_RETURN_LUAL_ERROR(L_, "sol: cannot call 'next' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
 			}
 
 			static int pairs(lua_State* L_) {
-				return luaL_error(L_, "sol: cannot call '__pairs/pairs' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
+				SOL_RETURN_LUAL_ERROR(
+				     L_, "sol: cannot call '__pairs/pairs' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
 			}
 
 			static int ipairs(lua_State* L_) {
-				return luaL_error(L_, "sol: cannot call '__ipairs' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
+				SOL_RETURN_LUAL_ERROR(L_, "sol: cannot call '__ipairs' on type '%s': it is not recognized as a container", detail::demangle<T>().c_str());
 			}
 
 			static iterator begin(lua_State* L_, T&) {
@@ -1464,7 +1472,8 @@ namespace sol {
 			}
 
 			static int find(std::false_type, lua_State* L_) {
-				return luaL_error(L_, "sol: cannot call 'find' on '%s': no supported comparison operator for the value type", detail::demangle<T>().c_str());
+				SOL_RETURN_LUAL_ERROR(
+				     L_, "sol: cannot call 'find' on '%s': no supported comparison operator for the value type", detail::demangle<T>().c_str());
 			}
 
 			static int next_iter(lua_State* L_) {
@@ -1484,19 +1493,21 @@ namespace sol {
 
 		public:
 			static int clear(lua_State* L_) {
-				return luaL_error(L_, "sol: cannot call 'clear' on type '%s': cannot remove all items from a fixed array", detail::demangle<T>().c_str());
+				SOL_RETURN_LUAL_ERROR(
+				     L_, "sol: cannot call 'clear' on type '%s': cannot remove all items from a fixed array", detail::demangle<T>().c_str());
 			}
 
 			static int erase(lua_State* L_) {
-				return luaL_error(L_, "sol: cannot call 'erase' on type '%s': cannot remove an item from fixed arrays", detail::demangle<T>().c_str());
+				SOL_RETURN_LUAL_ERROR(L_, "sol: cannot call 'erase' on type '%s': cannot remove an item from fixed arrays", detail::demangle<T>().c_str());
 			}
 
 			static int add(lua_State* L_) {
-				return luaL_error(L_, "sol: cannot call 'add' on type '%s': cannot add to fixed arrays", detail::demangle<T>().c_str());
+				SOL_RETURN_LUAL_ERROR(L_, "sol: cannot call 'add' on type '%s': cannot add to fixed arrays", detail::demangle<T>().c_str());
 			}
 
 			static int insert(lua_State* L_) {
-				return luaL_error(L_, "sol: cannot call 'insert' on type '%s': cannot insert new entries into fixed arrays", detail::demangle<T>().c_str());
+				SOL_RETURN_LUAL_ERROR(
+				     L_, "sol: cannot call 'insert' on type '%s': cannot insert new entries into fixed arrays", detail::demangle<T>().c_str());
 			}
 
 			static int at(lua_State* L_) {
@@ -1522,10 +1533,10 @@ namespace sol {
 				std::ptrdiff_t idx = stack::unqualified_get<std::ptrdiff_t>(L_, 2);
 				idx += deferred_uc::index_adjustment(L_, self);
 				if (idx >= static_cast<std::ptrdiff_t>(std::extent<T>::value)) {
-					return luaL_error(L_, "sol: index out of bounds (too big) for set on '%s'", detail::demangle<T>().c_str());
+					SOL_RETURN_LUAL_ERROR(L_, "sol: index out of bounds (too big) for set on '%s'", detail::demangle<T>().c_str());
 				}
 				if (idx < 0) {
-					return luaL_error(L_, "sol: index out of bounds (too small) for set on '%s'", detail::demangle<T>().c_str());
+					SOL_RETURN_LUAL_ERROR(L_, "sol: index out of bounds (too small) for set on '%s'", detail::demangle<T>().c_str());
 				}
 				self[idx] = stack::unqualified_get<value_type>(L_, 3);
 				return 0;
@@ -1588,5 +1599,9 @@ namespace sol {
 	struct usertype_container : container_detail::usertype_container_default<T> { };
 
 } // namespace sol
+
+#if SOL_IS_OFF(SOL_COMPILER_CLANG) && SOL_IS_ON(SOL_COMPILER_VCXX)
+#pragma warning(pop)
+#endif
 
 #endif // SOL_USERTYPE_CONTAINER_HPP

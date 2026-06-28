@@ -58,7 +58,11 @@ void worker_thread(worker_data& data) {
 }
 
 int main() {
-
+#if SOL_IS_ON(SOL_USE_LUAU)
+	std::cout << "Unsupported on luau, because luau lacks "
+	             "lua_dump()\n";
+	return 0;
+#else
 	// main lua state
 	sol::state lua;
 	lua.open_libraries(sol::lib::base);
@@ -154,4 +158,5 @@ int main() {
 
 	// workers are back, exit program
 	return 0;
+#endif
 }

@@ -88,6 +88,8 @@ TEST_CASE("plain/indestructible", "test that we error for types that are innatel
 	__lsan::ScopedDisabler guard;
 #endif
 
+	// On Luau, this generates an error when the state is destroyed. We can't catch that error.
+#if SOL_IS_OFF(SOL_USE_LUAU)
 	SECTION("doomed") {
 		sol::state lua;
 		lua.open_libraries(sol::lib::base);
@@ -102,6 +104,10 @@ TEST_CASE("plain/indestructible", "test that we error for types that are innatel
 		REQUIRE_FALSE(result.valid());
 #endif
 	}
+#endif
+
+	// No custom destructors.
+#if SOL_IS_OFF(SOL_USE_LUAU)
 	SECTION("saved") {
 		sol::state lua;
 		lua.open_libraries(sol::lib::base);
@@ -117,6 +123,7 @@ TEST_CASE("plain/indestructible", "test that we error for types that are innatel
 		auto result = lua.safe_script("collectgarbage()", sol::script_pass_on_error);
 		REQUIRE(result.valid());
 	}
+#endif
 }
 
 TEST_CASE("plain/constructors and destructors", "Make sure that constructors, destructors, deallocators and others work properly with the desired type") {

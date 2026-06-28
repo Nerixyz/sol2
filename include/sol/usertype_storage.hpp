@@ -24,6 +24,7 @@
 #ifndef SOL_USERTYPE_STORAGE_HPP
 #define SOL_USERTYPE_STORAGE_HPP
 
+#include <sol/demangle.hpp>
 #include <sol/usertype_core.hpp>
 #include <sol/make_reference.hpp>
 
@@ -166,7 +167,7 @@ namespace sol { namespace u_detail {
 	}
 
 	inline int new_index_fail(lua_State* L_) {
-		return luaL_error(L_, "sol: cannot set (new_index) into this object: no defined new_index operation on usertype");
+		SOL_RETURN_LUAL_ERROR(L_, "sol: cannot set (new_index) into this object: no defined new_index operation on usertype");
 	}
 
 	inline int new_index_target_fail(lua_State* L_, void*) {
@@ -174,7 +175,9 @@ namespace sol { namespace u_detail {
 	}
 
 	struct string_for_each_metatable_func {
+#if SOL_IS_OFF(SOL_USE_LUAU)
 		bool is_destruction = false;
+#endif
 		bool is_index = false;
 		bool is_new_index = false;
 		bool is_static_index = false;
@@ -208,6 +211,7 @@ namespace sol { namespace u_detail {
 			if (poison_indexing) {
 				(usb.*change_indexing)(L_, smt_, p_derived_usb, t, idx_call, new_idx_call, meta_idx_call, meta_new_idx_call);
 			}
+#if SOL_IS_OFF(SOL_USE_LUAU)
 			if (is_destruction
 				&& (smt_ == submetatable_type::reference || smt_ == submetatable_type::const_reference || smt_ == submetatable_type::named
 				     || smt_ == submetatable_type::unique)) {
@@ -218,6 +222,7 @@ namespace sol { namespace u_detail {
 				t.pop(L_);
 				return;
 			}
+#endif
 			if (is_index || is_new_index || is_static_index || is_static_new_index) {
 				// do not serialize the new_index and index functions here directly
 				// we control those...
@@ -680,7 +685,11 @@ namespace sol { namespace u_detail {
 			stack::push(L, nullptr);
 			stack::push(L, b.data());
 			lua_CFunction target_func = &b.template call<false, false>;
+#if SOL_IS_ON(SOL_USE_LUAU)
+			lua_pushcclosure(L, target_func, detail::demangle<Binding>().c_str(), 2);
+#else
 			lua_pushcclosure(L, target_func, 2);
+#endif
 			lua_rawset(L, metametatable_index);
 			this->named_index_table.pop(L);
 		}
@@ -711,7 +720,9 @@ namespace sol { namespace u_detail {
 			bool is_new_index = (s == to_string(meta_function::new_index));
 			bool is_static_index = (s == to_string(meta_function::static_index));
 			bool is_static_new_index = (s == to_string(meta_function::static_new_index));
+#if SOL_IS_OFF(SOL_USE_LUAU)
 			bool is_destruction = s == to_string(meta_function::garbage_collect);
+#endif
 			bool poison_indexing = (!is_using_index || !is_using_new_index) && (is_var_bind::value || is_index || is_new_index);
 			void* derived_this = static_cast<void*>(static_cast<usertype_storage<T>*>(this));
 			index_call_storage ics;
@@ -722,7 +733,9 @@ namespace sol { namespace u_detail {
 				                                               : &Binding::template index_call_with_<false, is_var_bind::value>;
 
 			string_for_each_metatable_func for_each_fx;
+#if SOL_IS_OFF(SOL_USE_LUAU)
 			for_each_fx.is_destruction = is_destruction;
+#endif
 			for_each_fx.is_index = is_index;
 			for_each_fx.is_new_index = is_new_index;
 			for_each_fx.is_static_index = is_static_index;
@@ -825,6 +838,15 @@ namespace sol { namespace u_detail {
 	}
 
 	template <typename T>
+	inline void destroy_usertype_storage_mem(lua_State* L, void* mem) noexcept {
+		// In Luau, we can't clear the names when the state is being destroyed.
+#if SOL_IS_OFF(SOL_USE_LUAU)
+		clear_usertype_registry_names<T>(L);
+#endif
+		detail::user_alloc_destroy_mem<usertype_storage<T>>(L, mem);
+	}
+
+	template <typename T>
 	inline int destroy_usertype_storage(lua_State* L) noexcept {
 		clear_usertype_registry_names<T>(L);
 		return detail::user_alloc_destroy<usertype_storage<T>>(L);
@@ -839,6 +861,9 @@ namespace sol { namespace u_detail {
 		int usertype_storage_push_count = stack::push<user<usertype_storage<T>>>(L, no_metatable, L);
 		stack_reference usertype_storage_ref(L, -usertype_storage_push_count);
 
+#if SOL_IS_ON(SOL_USE_LUAU)
+		detail::set_userdata_dtor_at(L, usertype_storage_ref.stack_index(), &destroy_usertype_storage_mem<T>);
+#else
 		// create and push onto the stack a table to use as metatable for this GC
 		// we create a metatable to attach to the regular gc_table
 		// so that the destructor is called for the usertype storage
@@ -850,9 +875,12 @@ namespace sol { namespace u_detail {
 		stack::set_field(L, metatable_key, usertype_storage_metatable, usertype_storage_ref.stack_index());
 		usertype_storage_metatable.pop();
 
+
+#endif
 		// set the usertype storage and its metatable
 		// into the global table...
 		stack::set_field<true>(L, gcmetakey, usertype_storage_ref);
+
 		usertype_storage_ref.pop();
 
 		// then retrieve the lua-stored version so we have a well-pinned
@@ -1061,6 +1089,7 @@ namespace sol { namespace u_detail {
 			stateless_stack_reference t(L_, -1);
 			fast_index_table_.reset(L_, t.stack_index());
 			stack::set_field<false, true>(L_, meta_function::type, storage.type_table, t.stack_index());
+#if SOL_IS_OFF(SOL_USE_LUAU)
 			// destructible? serialize default destructor here
 			// otherwise, not destructible: serialize a "hey you messed up"
 			switch (smt_) {
@@ -1087,6 +1116,7 @@ namespace sol { namespace u_detail {
 				}
 				break;
 			}
+#endif
 
 			static_assert(sizeof(void*) <= sizeof(detail::inheritance_check_function),
 				"The size of this data pointer is too small to fit the inheritance checking function: file a bug "

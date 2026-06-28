@@ -216,6 +216,9 @@ TEST_CASE("usertype/issue-number-thirty-five", "using value types created from l
 TEST_CASE("usertype/lua-stored-usertype", "ensure usertype values can be stored without keeping usertype object alive") {
 	sol::state lua;
 	lua.open_libraries(sol::lib::base);
+#if SOL_IS_ON(SOL_USE_LUAU)
+	lua["collectgarbage"] = [](sol::this_state L) { lua_gc(L.lua_state(), LUA_GCCOLLECT, 0); };
+#endif
 
 	{
 		sol::constructors<sol::types<float, float, float>> ctor;
