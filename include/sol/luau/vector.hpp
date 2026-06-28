@@ -126,22 +126,22 @@ namespace sol::luau {
 #if defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201907L
 		constexpr auto operator<=>(const vector& rhs) const noexcept = default;
 #else
-		constexpr bool operator==(const vector& rhs) const noexcept {
+		bool operator==(const vector& rhs) const noexcept {
 			return components == rhs.components;
 		}
-		constexpr bool operator!=(const vector& rhs) const noexcept {
+		bool operator!=(const vector& rhs) const noexcept {
 			return components != rhs.components;
 		}
-		constexpr bool operator<(const vector& rhs) const noexcept {
+		bool operator<(const vector& rhs) const noexcept {
 			return components < rhs.components;
 		}
-		constexpr bool operator<=(const vector& rhs) const noexcept {
+		bool operator<=(const vector& rhs) const noexcept {
 			return components <= rhs.components;
 		}
-		constexpr bool operator>(const vector& rhs) const noexcept {
+		bool operator>(const vector& rhs) const noexcept {
 			return components >= rhs.components;
 		}
-		constexpr bool operator>=(const vector& rhs) const noexcept {
+		bool operator>=(const vector& rhs) const noexcept {
 			return components >= rhs.components;
 		}
 #endif
