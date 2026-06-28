@@ -252,6 +252,7 @@ namespace sol {
 
 	namespace luau {
 		struct buffer_view;
+		struct vector;
 	} // namespace luau
 #endif
 

@@ -1314,6 +1314,9 @@ namespace sol {
 
 		template <>
 		struct lua_type_of<copy_buffer_t> : std::integral_constant<type, type::buffer> { };
+
+		template <>
+		struct lua_type_of<luau::vector> : std::integral_constant<type, type::vector> { };
 #endif
 
 		template <typename C, C v, template <typename...> class V, typename... Args>

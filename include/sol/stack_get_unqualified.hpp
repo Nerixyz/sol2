@@ -25,6 +25,7 @@
 #define SOL_STACK_UNQUALIFIED_GET_HPP
 
 #include <sol/luau/buffer.hpp>
+#include <sol/luau/vector.hpp>
 #include <sol/version.hpp>
 
 #include <sol/stack_core.hpp>
@@ -658,6 +659,14 @@ namespace sol { namespace stack {
 	template <>
 	struct unqualified_getter<copy_buffer_t> {
 		static copy_buffer_t get(lua_State* L, int index, record& tracking) = SOL_DELETE_X("Use sol::as_buffer/sol::luau::buffer_view");
+	};
+
+	template <>
+	struct unqualified_getter<luau::vector> {
+		static luau::vector get(lua_State* L, int index, record& tracking) {
+			tracking.use(1);
+			return luau::vector::from_pointer(lua_tovector(L, index));
+		}
 	};
 #endif
 

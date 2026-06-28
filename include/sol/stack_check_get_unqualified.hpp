@@ -128,6 +128,18 @@ namespace sol { namespace stack {
 					tracking.use(1);
 					return luau::buffer_view(data, len);
 				}
+				else if constexpr (std::is_same_v<T, luau::vector>) {
+					size_t len = 0;
+					const float* data = lua_tovector(L, index);
+					if (!data) {
+						const type t = type_of(L, index);
+						tracking.use(static_cast<int>(t != type::none));
+						handler(L, index, type::vector, t, "not a vector");
+						return detail::associated_nullopt_v<Optional>;
+					}
+					tracking.use(1);
+					return luau::vector::from_pointer(data);
+				}
 				else {
 					if (!unqualified_check<T>(L, index, std::forward<Handler>(handler))) {
 						tracking.use(static_cast<int>(!lua_isnone(L, index)));

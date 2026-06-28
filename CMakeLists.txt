@@ -145,6 +145,7 @@ set (sol2_headers
 	lua_table.hpp
 	lua_value.hpp
 	luau/buffer.hpp
+	luau/vector.hpp
 	make_reference.hpp
 	metatable.hpp
 	object_base.hpp

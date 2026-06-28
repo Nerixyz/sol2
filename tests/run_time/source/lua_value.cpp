@@ -234,6 +234,12 @@ TEST_CASE("lua_value/basic types", "make sure we can stick values and nested val
 	sol::lua_value lv_int_map(lua, { { 1, 2 }, { 3, 4 }, { 5, 6 } });
 #if SOL_IS_ON(SOL_USE_LUAU)
 	sol::lua_value lv_luau_buffer(lua, sol::copy_buffer(std::string_view("buffer")));
+#if LUA_VECTOR_SIZE == 3
+	sol::luau::vector gt_luau_vector(1, 2, 3);
+#else
+	sol::luau::vector gt_luau_vector(1, 2, 3, 4);
+#endif
+	sol::lua_value lv_luau_vector(lua, gt_luau_vector);
 #endif
 
 	REQUIRE(lv_int.is<int>());
@@ -249,6 +255,7 @@ TEST_CASE("lua_value/basic types", "make sure we can stick values and nested val
 #if SOL_IS_ON(SOL_USE_LUAU)
 	REQUIRE(lv_luau_buffer.is<sol::luau::buffer_view>());
 	REQUIRE(lv_luau_buffer.is<sol::luau::const_buffer_view>());
+	REQUIRE(lv_luau_vector.is<sol::luau::vector>());
 #endif
 
 	REQUIRE(lv_int.as<int>() == 1);
@@ -262,6 +269,7 @@ TEST_CASE("lua_value/basic types", "make sure we can stick values and nested val
 #if SOL_IS_ON(SOL_USE_LUAU)
 	REQUIRE(lv_luau_buffer.as<sol::luau::buffer_view>().string_view() == "buffer");
 	REQUIRE(lv_luau_buffer.as<sol::luau::const_buffer_view>().string_view() == "buffer");
+	REQUIRE(lv_luau_vector.as<sol::luau::vector>() == gt_luau_vector);
 #endif
 
 	std::vector<int> int_table_value_lv = lv_int_table.as<std::vector<int>>();
@@ -281,6 +289,7 @@ TEST_CASE("lua_value/basic types", "make sure we can stick values and nested val
 		sol::object obj_int_map(lv_int_map.value());
 #if SOL_IS_ON(SOL_USE_LUAU)
 		sol::object obj_luau_buffer(lv_luau_buffer.value());
+		sol::object obj_luau_vector(lv_luau_vector.value());
 #endif
 
 		REQUIRE(obj_int.is<int>());
@@ -296,6 +305,7 @@ TEST_CASE("lua_value/basic types", "make sure we can stick values and nested val
 #if SOL_IS_ON(SOL_USE_LUAU)
 		REQUIRE(obj_luau_buffer.is<sol::luau::buffer_view>());
 		REQUIRE(obj_luau_buffer.is<sol::luau::const_buffer_view>());
+		REQUIRE(obj_luau_vector.is<sol::luau::vector>());
 #endif
 
 		REQUIRE(obj_int.as<int>() == 1);
@@ -309,6 +319,7 @@ TEST_CASE("lua_value/basic types", "make sure we can stick values and nested val
 #if SOL_IS_ON(SOL_USE_LUAU)
 		REQUIRE(obj_luau_buffer.as<sol::luau::buffer_view>().string_view() == "buffer");
 		REQUIRE(obj_luau_buffer.as<sol::luau::const_buffer_view>().string_view() == "buffer");
+		REQUIRE(obj_luau_vector.as<sol::luau::vector>() == gt_luau_vector);
 #endif
 
 		std::vector<int> int_table_value = obj_int_table.as<std::vector<int>>();
@@ -328,6 +339,7 @@ TEST_CASE("lua_value/basic types", "make sure we can stick values and nested val
 		lua["obj_int_map"] = lv_int_map;
 #if SOL_IS_ON(SOL_USE_LUAU)
 		lua["obj_luau_buffer"] = lv_luau_buffer;
+		lua["obj_luau_vector"] = lv_luau_vector;
 #endif
 
 		// these all actually invoke the constructor
@@ -345,6 +357,7 @@ TEST_CASE("lua_value/basic types", "make sure we can stick values and nested val
 		sol::lua_value obj_int_map = lua["obj_int_map"];
 #if SOL_IS_ON(SOL_USE_LUAU)
 		sol::lua_value obj_luau_buffer = lua["obj_luau_buffer"];
+		sol::lua_value obj_luau_vector = lua["obj_luau_vector"];
 #endif
 
 		REQUIRE(obj_int.is<int>());
@@ -358,6 +371,7 @@ TEST_CASE("lua_value/basic types", "make sure we can stick values and nested val
 #if SOL_IS_ON(SOL_USE_LUAU)
 		REQUIRE(obj_luau_buffer.is<sol::luau::buffer_view>());
 		REQUIRE(obj_luau_buffer.is<sol::luau::const_buffer_view>());
+		REQUIRE(obj_luau_vector.is<sol::luau::vector>());
 #endif
 
 		REQUIRE(obj_int.as<int>() == 1);
@@ -370,6 +384,7 @@ TEST_CASE("lua_value/basic types", "make sure we can stick values and nested val
 #if SOL_IS_ON(SOL_USE_LUAU)
 		REQUIRE(obj_luau_buffer.as<sol::luau::buffer_view>().string_view() == "buffer");
 		REQUIRE(obj_luau_buffer.as<sol::luau::const_buffer_view>().string_view() == "buffer");
+		REQUIRE(obj_luau_vector.as<sol::luau::vector>() == gt_luau_vector);
 #endif
 
 		std::vector<int> int_table_value = obj_int_table.as<std::vector<int>>();

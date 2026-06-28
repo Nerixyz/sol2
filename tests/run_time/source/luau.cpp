@@ -62,4 +62,25 @@ TEST_CASE("luau/buffer", "get values in and out as a buffer") {
 #endif
 }
 
+TEST_CASE("luau/vector", "get values in and out as vectors") {
+	sol::state lua;
+	lua.open_libraries(sol::lib::base, sol::lib::vector);
+
+#if LUA_VECTOR_SIZE == 3
+	lua["myvec"] = sol::luau::vector(1, 2, 3);
+	auto ret = lua.safe_script(R"(
+        assert(myvec == vector.create(1, 2, 3))
+        return vector.create(4, 5, 6)
+    )");
+	REQUIRE(ret.get<sol::luau::vector>() == sol::luau::vector(4, 5, 6));
+#else
+	lua["myvec"] = sol::luau::vector(1, 2, 3, 4);
+	auto ret = lua.safe_script(R"(
+        assert(myvec == vector.create(1, 2, 3, 4))
+        return vector.create(5, 6, 7, 8)
+    )");
+	REQUIRE(ret.get<sol::luau::vector>() == sol::luau::vector(5, 6, 7, 8));
+#endif
+}
+
 #endif
