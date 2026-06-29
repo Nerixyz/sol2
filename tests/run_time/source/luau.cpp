@@ -25,7 +25,7 @@
 
 #include <catch2/catch_all.hpp>
 
-#if defined(__cpp_lib_span) && __cpp_lib_span >=  	202002L 
+#if defined(__cpp_lib_span) && __cpp_lib_span >= 202002L
 #define SOL_TEST_HAS_SPAN
 #include <span>
 #endif
@@ -34,31 +34,31 @@
 
 TEST_CASE("luau/buffer", "get values in and out as a buffer") {
 	sol::state lua;
-    lua.open_libraries(sol::lib::base, sol::lib::buffer);
+	lua.open_libraries(sol::lib::base, sol::lib::buffer);
 
-    lua["mybuf"] = sol::copy_buffer(std::string_view("my buffer"));
-    auto ret = lua.safe_script(R"(
+	lua["mybuf"] = sol::copy_buffer(std::string_view("my buffer"));
+	auto ret = lua.safe_script(R"(
         assert(buffer.readstring(mybuf, 0, buffer.len(mybuf)) == "my buffer")
         luabuf = buffer.fromstring("in lua")
         return luabuf
     )");
-    auto luabuf = ret.get<sol::luau::buffer_view>();
-    REQUIRE(luabuf.string_view() == "in lua");
-    char *s = static_cast<char*>(luabuf.data());
-    s[3] = 'c';
-    s[4] = '+';
-    s[5] = '+';
-    lua.safe_script(R"(assert(buffer.readstring(luabuf, 0, 6) == "in c++"))");
+	auto luabuf = ret.get<sol::luau::buffer_view>();
+	REQUIRE(luabuf.string_view() == "in lua");
+	char* s = static_cast<char*>(luabuf.data());
+	s[3] = 'c';
+	s[4] = '+';
+	s[5] = '+';
+	lua.safe_script(R"(assert(buffer.readstring(luabuf, 0, 6) == "in c++"))");
 
-    auto sv = ret.get<sol::as_buffer_t<std::string_view>>();
-    REQUIRE(sv == "in c++");
+	auto sv = ret.get<sol::as_buffer_t<std::string_view>>();
+	REQUIRE(sv == "in c++");
 
 #ifdef SOL_TEST_HAS_SPAN
-    auto sp = ret.get<sol::as_buffer_t<std::span<char>>>();
-    REQUIRE(std::string_view(sp.data(), sp.size()) == "in c++");
+	auto sp = ret.get<sol::as_buffer_t<std::span<char>>>();
+	REQUIRE(std::string_view(sp.data(), sp.size()) == "in c++");
 
-    auto sp2 = ret.get<sol::as_buffer_t<std::span<unsigned char>>>();
-    REQUIRE(std::string_view(reinterpret_cast<const char*>(sp2.data()), sp2.size()) == "in c++");
+	auto sp2 = ret.get<sol::as_buffer_t<std::span<unsigned char>>>();
+	REQUIRE(std::string_view(reinterpret_cast<const char*>(sp2.data()), sp2.size()) == "in c++");
 #endif
 }
 

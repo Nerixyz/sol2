@@ -73,10 +73,10 @@ namespace sol::luau {
 			return string_view();
 		}
 
-        [[nodiscard]]
-        constexpr std::string_view string_view() const noexcept{
+		[[nodiscard]]
+		constexpr std::string_view string_view() const noexcept {
 			return { static_cast<const char*>(data_), size_ };
-        }
+		}
 
 	private:
 		void* data_ = nullptr;
@@ -124,10 +124,10 @@ namespace sol::luau {
 			return string_view();
 		}
 
-        [[nodiscard]]
-        constexpr std::string_view string_view() const noexcept{
+		[[nodiscard]]
+		constexpr std::string_view string_view() const noexcept {
 			return { static_cast<const char*>(data_), size_ };
-        }
+		}
 
 	private:
 		const void* data_ = nullptr;
