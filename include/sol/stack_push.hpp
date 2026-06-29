@@ -25,6 +25,7 @@
 #define SOL_STACK_PUSH_HPP
 
 #include <sol/demangle.hpp>
+#include <sol/luau/vector.hpp>
 #include <sol/stack_core.hpp>
 #include <sol/raii.hpp>
 #include <sol/optional.hpp>
@@ -495,6 +496,50 @@ namespace sol { namespace stack {
 			}
 		}
 	};
+
+#if SOL_IS_ON(SOL_USE_LUAU)
+	template <>
+	struct unqualified_pusher<luau::buffer_view> {
+		static int push(lua_State* L, luau::buffer_view value_) = SOL_DELETE_X("Use sol::copy_buffer to explicitly copy the contents.");
+	};
+
+	template <typename T>
+	struct unqualified_pusher<as_buffer_t<T>> {
+		static int push(lua_State* L, const as_buffer_t<T>& value_) = SOL_DELETE_X("Use sol::copy_buffer to explicitly copy the contents.");
+	};
+
+	template <>
+	struct unqualified_pusher<copy_buffer_t> {
+		static int push(lua_State* L, copy_buffer_t value_) {
+#if SOL_IS_ON(SOL_SAFE_STACK_CHECK)
+			luaL_checkstack(L, 1, detail::not_enough_stack_space_userdata);
+#endif // make sure stack doesn't overflow
+
+			void* buf = lua_newbuffer(L, value_.value().size());
+			if (value_.value().data()) {
+				std::memcpy(buf, value_.value().data(), value_.value().size());
+			}
+
+			return 1;
+		}
+	};
+
+	template <>
+	struct unqualified_pusher<luau::vector> {
+		static int push(lua_State* L, luau::vector value_) {
+#if SOL_IS_ON(SOL_SAFE_STACK_CHECK)
+			luaL_checkstack(L, 1, detail::not_enough_stack_space_userdata);
+#endif // make sure stack doesn't overflow
+
+#if LUA_VECTOR_SIZE == 3
+			lua_pushvector(L, value_.x(), value_.y(), value_.z());
+#else
+			lua_pushvector(L, value_.x(), value_.y(), value_.z(), value_.w());
+#endif
+			return 1;
+		}
+	};
+#endif
 
 	template <typename T>
 	struct unqualified_pusher<nested<T>> {

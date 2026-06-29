@@ -34,6 +34,7 @@
 #include <sol/raii.hpp>
 #include <sol/policies.hpp>
 #include <sol/ebco.hpp>
+#include <sol/luau/buffer.hpp>
 
 #include <array>
 #include <initializer_list>
@@ -387,6 +388,70 @@ namespace sol {
 			return this->base_t::value();
 		}
 	};
+
+#if SOL_IS_ON(SOL_USE_LUAU)
+	/// Push a buffer by copying data from this buffer.
+	///
+	/// This is a separate type to make copies explicit.
+	struct copy_buffer_t : private detail::ebco<luau::const_buffer_view> {
+	private:
+		using base_t = detail::ebco<const_buffer_view>;
+
+	public:
+		copy_buffer_t() = default;
+		copy_buffer_t(const copy_buffer_t&) = default;
+		copy_buffer_t(copy_buffer_t&&) = default;
+		copy_buffer_t& operator=(const copy_buffer_t&) = default;
+		copy_buffer_t& operator=(copy_buffer_t&&) = default;
+		copy_buffer_t(const luau::const_buffer_view& obj) noexcept : base_t(obj) {
+		}
+		copy_buffer_t(luau::const_buffer_view&& obj) noexcept : base_t(std::move(obj)) {
+		}
+		template <
+		     typename Arg, typename... Args,
+		     std::enable_if_t<(!std::is_same_v<copy_buffer_t, meta::unqualified_t<Arg>> && !std::is_same_v<luau::const_buffer_view, meta::unqualified_t<Arg>>)
+		                      || sizeof...(Args) != 0>* = nullptr>
+		copy_buffer_t(Arg&& arg, Args&&... args) noexcept(std::is_nothrow_constructible_v<base_t, Arg, Args...>)
+		: base_t(std::forward<Arg>(arg), std::forward<Args>(args)...) {
+		}
+
+		using base_t::value;
+	};
+
+	/// Push a buffer by copying data from this buffer.
+	///
+	/// This is a separate function to make copies explicit.
+	template <typename... Args>
+	copy_buffer_t copy_buffer(Args&&... args) {
+		return copy_buffer_t(std::forward<Args>(args)...);
+	}
+
+	/// Get a value as a buffer.
+	template <typename C>
+	struct as_buffer_t : private detail::ebco<C> {
+	private:
+		using base_t = detail::ebco<C>;
+
+	public:
+		as_buffer_t() = default;
+		as_buffer_t(const as_buffer_t&) = default;
+		as_buffer_t(as_buffer_t&&) = default;
+		as_buffer_t& operator=(const as_buffer_t&) = default;
+		as_buffer_t& operator=(as_buffer_t&&) = default;
+		as_buffer_t(const meta::unqualified_t<C>& obj) noexcept(std::is_nothrow_constructible_v<base_t, const meta::unqualified_t<C>&>) : base_t(obj) {
+		}
+		as_buffer_t(meta::unqualified_t<C>&& obj) noexcept(std::is_nothrow_constructible_v<base_t, meta::unqualified_t<C>&&>) : base_t(std::move(obj)) {
+		}
+		template <typename Arg, typename... Args,
+		          std::enable_if_t<!std::is_same_v<as_buffer_t, meta::unqualified_t<Arg>> && !std::is_same_v<meta::unqualified_t<C>, meta::unqualified_t<Arg>>
+		                           && sizeof...(Args) != 0>* = nullptr>
+		as_buffer_t(Arg&& arg, Args&&... args) noexcept(std::is_nothrow_constructible_v<base_t, Arg, Args...>)
+		: base_t(std::forward<Arg>(arg), std::forward<Args>(args)...) {
+		}
+
+		using base_t::value;
+	};
+#endif
 
 	template <typename T>
 	struct nested : private detail::ebco<T> {
@@ -747,6 +812,11 @@ namespace sol {
 		userdata = LUA_TUSERDATA,
 		lightuserdata = LUA_TLIGHTUSERDATA,
 		table = LUA_TTABLE,
+#if SOL_IS_ON(SOL_USE_LUAU)
+		class_ = LUA_TCLASS,
+		vector = LUA_TVECTOR,
+		buffer = LUA_TBUFFER,
+#endif
 		poly = -0xFFFF
 	};
 
@@ -1231,6 +1301,23 @@ namespace sol {
 
 		template <typename T>
 		struct lua_type_of<nested<T>> : meta::conditional_t<::sol::is_container_v<T>, std::integral_constant<type, type::table>, lua_type_of<T>> { };
+
+#if SOL_IS_ON(SOL_USE_LUAU)
+		template <>
+		struct lua_type_of<luau::buffer_view> : std::integral_constant<type, type::buffer> { };
+
+		template <>
+		struct lua_type_of<luau::const_buffer_view> : std::integral_constant<type, type::buffer> { };
+
+		template <typename T>
+		struct lua_type_of<as_buffer_t<T>> : std::integral_constant<type, type::buffer> { };
+
+		template <>
+		struct lua_type_of<copy_buffer_t> : std::integral_constant<type, type::buffer> { };
+
+		template <>
+		struct lua_type_of<luau::vector> : std::integral_constant<type, type::vector> { };
+#endif
 
 		template <typename C, C v, template <typename...> class V, typename... Args>
 		struct accumulate : std::integral_constant<C, v> { };

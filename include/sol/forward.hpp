@@ -244,6 +244,18 @@ namespace sol {
 
 	using check_handler_type = int(lua_State*, int, type, type, const char*);
 
+#if SOL_IS_ON(SOL_USE_LUAU)
+	template <typename C>
+	struct as_buffer_t;
+
+	struct copy_buffer_t;
+
+	namespace luau {
+		struct buffer_view;
+		struct vector;
+	} // namespace luau
+#endif
+
 } // namespace sol
 
 #define SOL_BASE_CLASSES(T, ...)                       \
