@@ -23,7 +23,7 @@ namespace sol::bench {
 	}
 
 	void luaDoStringOrThrow(lua_State* L, std::string_view code, std::string_view where) {
-		const int status = luaL_dostring(L, std::string(code).c_str());
+		const int status = luaL_loadstring(L, std::string(code).c_str()) || lua_pcall(L, 0, LUA_MULTRET, 0);
 		luaCheckOrThrow(L, status, where);
 	}
 

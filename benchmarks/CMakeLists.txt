@@ -4,6 +4,8 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.28.0")
 else()
     set(_efa_flag)
 endif()
+set(BENCHMARK_ENABLE_WERROR OFF CACHE INTERNAL "")
+set(BENCHMARK_ENABLE_TESTING OFF CACHE INTERNAL "")
 FetchContent_Declare(
 	GoogleBenchmark
 	GIT_REPOSITORY https://github.com/google/benchmark.git
