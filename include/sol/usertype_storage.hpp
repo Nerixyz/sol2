@@ -49,13 +49,10 @@ namespace sol { namespace u_detail {
 	using change_indexing_mem_func = void (usertype_storage_base::*)(
 		lua_State*, submetatable_type, void*, stateless_stack_reference&, lua_CFunction, lua_CFunction, lua_CFunction, lua_CFunction);
 
-	struct index_call_storage {
+	struct new_index_call_storage {
 		index_call_function* index;
 		index_call_function* new_index;
 		void* binding_data;
-	};
-
-	struct new_index_call_storage : index_call_storage {
 		void* new_binding_data;
 	};
 
@@ -66,7 +63,7 @@ namespace sol { namespace u_detail {
 	};
 
 	template <typename K, typename Fq, typename T = void>
-	struct binding : binding_base {
+	struct binding final : binding_base {
 		using uF = meta::unqualified_t<Fq>;
 		using F = meta::conditional_t<meta::is_c_str_of_v<uF, char>
 #if SOL_IS_ON(SOL_CHAR8_T)
@@ -108,6 +105,16 @@ namespace sol { namespace u_detail {
 			}
 		}
 
+		template <bool is_index>
+		static inline stateless_reference create_index_closure(lua_State* L_, void* target) {
+			// set up upvalues for a chained call
+			int upvalues = 0;
+			upvalues += stack::push(L_, nullptr);
+			upvalues += stack::push(L_, target);
+			auto cfunc = &call<is_index, /*is_variable=*/false>;
+			return make_reference<stateless_reference>(L_, c_closure(cfunc, upvalues));
+		}
+
 		template <bool is_index = true, bool is_variable = false>
 		static inline int index_call_with_(lua_State* L_, void* target) {
 			if constexpr (!is_variable) {
@@ -116,13 +123,9 @@ namespace sol { namespace u_detail {
 					return stack::push(L_, f);
 				}
 				else {
-					// set up upvalues
-					// for a chained call
-					int upvalues = 0;
-					upvalues += stack::push(L_, nullptr);
-					upvalues += stack::push(L_, target);
-					auto cfunc = &call<is_index, is_variable>;
-					return stack::push(L_, c_closure(cfunc, upvalues));
+					// Target is actually a reference index here (see create_index_closure).
+					int index = static_cast<int>(reinterpret_cast<uintptr_t>(target));
+					return stack::push(L_, stateless_reference(detail::raw_ref_index, index));
 				}
 			}
 			else {
@@ -188,7 +191,7 @@ namespace sol { namespace u_detail {
 		std::string* p_key = nullptr;
 		reference* p_binding_ref = nullptr;
 		lua_CFunction call_func = nullptr;
-		index_call_storage* p_ics = nullptr;
+		new_index_call_storage* p_ics = nullptr;
 		usertype_storage_base* p_usb = nullptr;
 		void* p_derived_usb = nullptr;
 		lua_CFunction idx_call = nullptr, new_idx_call = nullptr, meta_idx_call = nullptr, meta_new_idx_call = nullptr;
@@ -197,7 +200,7 @@ namespace sol { namespace u_detail {
 		void operator()(lua_State* L_, submetatable_type smt_, stateless_reference& fast_index_table_) {
 			std::string& key = *p_key;
 			usertype_storage_base& usb = *p_usb;
-			index_call_storage& ics = *p_ics;
+			new_index_call_storage& ics = *p_ics;
 
 			if (smt_ == submetatable_type::named) {
 				// do not override __call or
@@ -293,7 +296,8 @@ namespace sol { namespace u_detail {
 		lua_State* m_L;
 		std::vector<std::unique_ptr<binding_base>> storage;
 		std::vector<std::unique_ptr<char[]>> string_keys_storage;
-		std::unordered_map<string_view, index_call_storage> string_keys;
+		std::vector<stateless_reference> auxiliary_refs;
+		std::unordered_map<string_view, new_index_call_storage> string_keys;
 		std::unordered_map<stateless_reference, stateless_reference, stateless_reference_hash, stateless_reference_equals> auxiliary_keys;
 		stateless_reference value_index_table;
 		stateless_reference reference_index_table;
@@ -314,6 +318,7 @@ namespace sol { namespace u_detail {
 		: m_L(L_)
 		, storage()
 		, string_keys_storage()
+		, auxiliary_refs()
 		, string_keys()
 		, auxiliary_keys(0, stateless_reference_hash(L_), stateless_reference_equals(L_))
 		, value_index_table()
@@ -370,7 +375,7 @@ namespace sol { namespace u_detail {
 			}
 		}
 
-		void add_entry(string_view sv, index_call_storage ics) {
+		void add_entry(string_view sv, new_index_call_storage ics) {
 			string_keys_storage.emplace_back(new char[sv.size()]);
 			std::unique_ptr<char[]>& sv_storage = string_keys_storage.back();
 			std::memcpy(sv_storage.get(), sv.data(), sv.size());
@@ -444,6 +449,11 @@ namespace sol { namespace u_detail {
 				stack::clear(m_L, named_metatable);
 			}
 
+			for (const auto& ref : auxiliary_refs) {
+				ref.deref(m_L);
+			}
+			auxiliary_keys.clear();
+
 			value_index_table.reset(m_L);
 			reference_index_table.reset(m_L);
 			unique_index_table.reset(m_L);
@@ -484,7 +494,7 @@ namespace sol { namespace u_detail {
 		static inline int self_index_call(types<Bases...>, lua_State* L, usertype_storage_base& self) {
 			type k_type = stack::get<type>(L, 2);
 			if (k_type == type::string) {
-				index_call_storage* target = nullptr;
+				new_index_call_storage* target = nullptr;
 				string_view k = stack::get<string_view>(L, 2);
 				{
 					auto it = self.string_keys.find(k);
@@ -495,7 +505,7 @@ namespace sol { namespace u_detail {
 				if (target != nullptr) {
 					// let the target decide what to do, unless it's named...
 					if constexpr (is_new_index) {
-						return (target->new_index)(L, target->binding_data);
+						return (target->new_index)(L, target->new_binding_data);
 					}
 					else {
 						return (target->index)(L, target->binding_data);
@@ -725,12 +735,35 @@ namespace sol { namespace u_detail {
 #endif
 			bool poison_indexing = (!is_using_index || !is_using_new_index) && (is_var_bind::value || is_index || is_new_index);
 			void* derived_this = static_cast<void*>(static_cast<usertype_storage<T>*>(this));
-			index_call_storage ics;
-			ics.binding_data = b.data();
-			ics.index = is_index || is_static_index ? &Binding::template call_with_<true, is_var_bind::value>
-				                                   : &Binding::template index_call_with_<true, is_var_bind::value>;
-			ics.new_index = is_new_index || is_static_new_index ? &Binding::template call_with_<false, is_var_bind::value>
-				                                               : &Binding::template index_call_with_<false, is_var_bind::value>;
+			new_index_call_storage ics;
+			// The actual binding data to be passed.
+			auto binding_data = b.data();
+			auto new_binding_data = binding_data;
+			ics.binding_data = binding_data;
+			ics.new_binding_data = new_binding_data;
+			if (is_index || is_static_index) {
+				ics.index = &Binding::template call_with_<true, is_var_bind::value>;
+			}
+			else {
+				ics.index = &Binding::template index_call_with_<true, is_var_bind::value>;
+				if constexpr (!is_var_bind::value && !is_lua_c_function_v<std::decay_t<typename Binding::F>>) {
+					// Create the closure once and retrieve it from the registry when calling.
+					stateless_reference ref = Binding::template create_index_closure<true>(L, binding_data);
+					binding_data = reinterpret_cast<void*>(static_cast<uintptr_t>(ref.registry_index()));
+					this->auxiliary_refs.emplace_back(std::move(ref));
+				}
+			}
+			if (is_new_index || is_static_new_index) {
+				ics.new_index = &Binding::template call_with_<false, is_var_bind::value>;
+			}
+			else {
+				ics.new_index = &Binding::template index_call_with_<false, is_var_bind::value>;
+				if constexpr (!is_var_bind::value && !is_lua_c_function_v<std::decay_t<typename Binding::F>>) {
+					stateless_reference ref = Binding::template create_index_closure<false>(L, new_binding_data);
+					new_binding_data = reinterpret_cast<void*>(static_cast<uintptr_t>(ref.registry_index()));
+					this->auxiliary_refs.emplace_back(std::move(ref));
+				}
+			}
 
 			string_for_each_metatable_func for_each_fx;
 #if SOL_IS_OFF(SOL_USE_LUAU)
@@ -765,21 +798,23 @@ namespace sol { namespace u_detail {
 			// functions here
 			if (is_index) {
 				this->base_index.index = ics.index;
-				this->base_index.binding_data = ics.binding_data;
+				this->base_index.binding_data = binding_data;
 			}
 			if (is_new_index) {
 				this->base_index.new_index = ics.new_index;
-				this->base_index.new_binding_data = ics.binding_data;
+				this->base_index.new_binding_data = new_binding_data;
 			}
 			if (is_static_index) {
 				this->static_base_index.index = ics.index;
-				this->static_base_index.binding_data = ics.binding_data;
+				this->static_base_index.binding_data = binding_data;
 			}
 			if (is_static_new_index) {
 				this->static_base_index.new_index = ics.new_index;
-				this->static_base_index.new_binding_data = ics.binding_data;
+				this->static_base_index.new_binding_data = new_binding_data;
 			}
 			this->for_each_table(L, for_each_fx);
+			ics.binding_data = binding_data;
+			ics.new_binding_data = new_binding_data;
 			this->add_entry(s, std::move(ics));
 		}
 		else {

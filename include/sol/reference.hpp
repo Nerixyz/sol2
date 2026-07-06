@@ -244,7 +244,10 @@ namespace sol {
 
 	namespace detail {
 		struct no_safety_tag {
-		} inline constexpr no_safety {};
+		} inline constexpr no_safety { };
+
+		struct raw_ref_index_tag {
+		} inline constexpr raw_ref_index { };
 
 		template <bool b>
 		inline lua_State* pick_main_thread(lua_State* L_, lua_State* backup_if_unsupported = nullptr) {
@@ -370,6 +373,9 @@ namespace sol {
 			ref = luaL_ref(L_, LUA_REGISTRYINDEX);
 		}
 		stateless_reference(lua_State*, lua_nil_t) noexcept {
+		}
+
+		stateless_reference(detail::raw_ref_index_tag, int ref_index) noexcept : ref(ref_index) {
 		}
 
 		~stateless_reference() noexcept = default;
