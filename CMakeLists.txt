@@ -54,6 +54,7 @@ option(SOL2_DYNAMIC_LOADING_EXAMPLES "Enable build of interop examples" OFF)
 option(SOL2_SINGLE "Enable generation and build of single header files" OFF)
 option(SOL2_DOCS "Enable build of documentation" OFF)
 option(SOL2_ENABLE_INSTALL "Enable installation of Sol2" ON)
+option(SOL2_ENABLE_BENCHMARKS "Enable benchmarks of Sol2" OFF)
 option(SOL2_ENABLE_DUMMY_HEADER_TARGET "Create a target that includes sol2 headers. This is helpful for providing compile commands to clangd." OFF)
 # Single tests and examples tests will only be turned on if both SINGLE and TESTS are defined
 CMAKE_DEPENDENT_OPTION(SOL2_TESTS_SINGLE "Enable build of tests using the premade single headers" ON
@@ -432,6 +433,11 @@ if (sol2-is-top-level-project)
 	if (SOL2_SCRATCH)
 		message(STATUS "sol2 adding scratch space...")
 		add_subdirectory(scratch)
+	endif()
+
+	if (SOL2_ENABLE_BENCHMARKS)
+		message(STATUS "sol2 adding benchmarks...")
+		add_subdirectory(benchmarks)
 	endif()
 endif()
 

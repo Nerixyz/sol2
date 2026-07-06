@@ -1,0 +1,202 @@
+// Copyright 2026, kunitoki (https://github.com/kunitoki/LuaBridge3)
+// Copyright 2026, nerixyz
+// Inspired from https://github.com/ThePhD/lua-bindings-shootout by ThePhD
+// SPDX-License-Identifier: MIT
+
+#ifndef SOL_BENCHMARKS_SRC_BENCH_HPP
+#define SOL_BENCHMARKS_SRC_BENCH_HPP
+
+#include <benchmark/benchmark.h>
+
+#include <cstdint>
+#include <memory>
+#include <string_view>
+
+#include <sol/compatibility/lua_version.hpp>
+
+namespace sol::bench {
+
+	inline constexpr double kMagicValue = 24.0;
+
+	struct Counter {
+		int value = 0;
+
+		void inc() {
+			++value;
+		}
+
+		int add(int x) {
+			value += x;
+			return value;
+		}
+
+		int get() const {
+			return value;
+		}
+
+		void set(int v) {
+			value = v;
+		}
+
+		static int static_add(int a, int b) {
+			return a + b;
+		}
+	};
+
+	struct Basic {
+		double var = 0.0;
+
+		double get() const {
+			return var;
+		}
+
+		void set(double v) {
+			var = v;
+		}
+	};
+
+	struct BasicLarge {
+		std::int64_t var = 0;
+		std::int64_t var0 = 0;
+		std::int64_t var1 = 0;
+		std::int64_t var2 = 0;
+		std::int64_t var3 = 0;
+		std::int64_t var4 = 0;
+		std::int64_t var5 = 0;
+		std::int64_t var6 = 0;
+		std::int64_t var7 = 0;
+		std::int64_t var8 = 0;
+		std::int64_t var9 = 0;
+		std::int64_t var10 = 0;
+		std::int64_t var11 = 0;
+		std::int64_t var12 = 0;
+		std::int64_t var13 = 0;
+		std::int64_t var14 = 0;
+		std::int64_t var15 = 0;
+		std::int64_t var16 = 0;
+		std::int64_t var17 = 0;
+		std::int64_t var18 = 0;
+		std::int64_t var19 = 0;
+		std::int64_t var20 = 0;
+		std::int64_t var21 = 0;
+		std::int64_t var22 = 0;
+		std::int64_t var23 = 0;
+		std::int64_t var24 = 0;
+		std::int64_t var25 = 0;
+		std::int64_t var26 = 0;
+		std::int64_t var27 = 0;
+		std::int64_t var28 = 0;
+		std::int64_t var29 = 0;
+		std::int64_t var30 = 0;
+		std::int64_t var31 = 0;
+		std::int64_t var32 = 0;
+		std::int64_t var33 = 0;
+		std::int64_t var34 = 0;
+		std::int64_t var35 = 0;
+		std::int64_t var36 = 0;
+		std::int64_t var37 = 0;
+		std::int64_t var38 = 0;
+		std::int64_t var39 = 0;
+		std::int64_t var40 = 0;
+		std::int64_t var41 = 0;
+		std::int64_t var42 = 0;
+		std::int64_t var43 = 0;
+		std::int64_t var44 = 0;
+		std::int64_t var45 = 0;
+		std::int64_t var46 = 0;
+		std::int64_t var47 = 0;
+		std::int64_t var48 = 0;
+		std::int64_t var49 = 0;
+	};
+
+	struct ComplexBaseA {
+		double a = kMagicValue;
+
+		double a_func() const {
+			return a;
+		}
+	};
+
+	struct ComplexBaseB {
+		double b = kMagicValue;
+
+		double b_func() const {
+			return b;
+		}
+	};
+
+	struct ComplexAB : ComplexBaseA, ComplexBaseB {
+		double ab = kMagicValue;
+
+		double ab_func() const {
+			return ab;
+		}
+	};
+
+	struct StatefulFunction {
+		double operator()(double v) const {
+			return v;
+		}
+	};
+
+	struct SharedObject : std::enable_shared_from_this<SharedObject> {
+		double value = kMagicValue;
+
+		double get() const {
+			return value;
+		}
+	};
+
+	struct Vec3Source {
+		float x = 0.f, y = 0.f, z = 0.f;
+		Vec3Source() = default;
+		Vec3Source(float x_, float y_, float z_) : x(x_), y(y_), z(z_) {
+		}
+	};
+
+	struct Vec3Target {
+		float x = 0.f, y = 0.f, z = 0.f;
+		Vec3Target() = default;
+		Vec3Target(float x_, float y_, float z_) : x(x_), y(y_), z(z_) {
+		}
+	};
+
+	struct ColorSource {
+		float r = 0.f, g = 0.f, b = 0.f;
+		ColorSource() = default;
+		ColorSource(float r_, float g_, float b_) : r(r_), g(g_), b(b_) {
+		}
+	};
+
+	inline float sumVec3(Vec3Target v) {
+		return v.x + v.y + v.z;
+	}
+
+	inline float sumVec3Ref(const Vec3Target& v) {
+		return v.x + v.y + v.z;
+	}
+
+	inline Basic* basic_return() {
+		static Basic value { };
+		return &value;
+	}
+
+	inline double basic_get_var(Basic* b) {
+		return b ? b->var : 0.0;
+	}
+
+	inline std::shared_ptr<SharedObject> shared_object_return() {
+		static std::shared_ptr<SharedObject> obj = std::make_shared<SharedObject>();
+		return obj;
+	}
+
+	inline double shared_object_get_value(std::shared_ptr<SharedObject> obj) {
+		return obj ? obj->get() : 0.0;
+	}
+
+	void luaCheckOrThrow(lua_State* L, int status, std::string_view where);
+	void luaDoStringOrThrow(lua_State* L, std::string_view code, std::string_view where);
+
+} // namespace sol::bench
+
+#endif
