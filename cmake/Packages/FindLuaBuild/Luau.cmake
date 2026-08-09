@@ -9,7 +9,7 @@ include(ExternalProject)
 include(Common/Core)
 
 # Latest version of Luau
-set(LUAU_LATEST_VERSION 0.727)
+set(LUAU_LATEST_VERSION 0.733)
 
 # Clean up and validate the version
 if (LUA_VERSION MATCHES "^Luau ([0-9]+)\\.([0-9]+)$")
