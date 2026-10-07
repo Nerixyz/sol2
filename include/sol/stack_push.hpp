@@ -1364,7 +1364,9 @@ namespace sol { namespace stack {
 
 		template <typename Optional>
 		static int push(lua_State* L, Optional&& op) {
-			using QualifiedValueType = meta::conditional_t<std::is_lvalue_reference_v<Optional>, ValueType&, ValueType&&>;
+			using QualifiedValueType = meta::conditional_t<std::is_lvalue_reference_v<Optional>,
+				meta::conditional_t<std::is_const_v<std::remove_reference_t<Optional>>, const ValueType&, ValueType&>,
+				ValueType&&>;
 			if (!op) {
 				return stack::push(L, nullopt);
 			}
