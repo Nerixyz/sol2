@@ -38,6 +38,11 @@
 		#include <lauxlib.h>
 		#include <lualib.h>
 	#endif
+#elif SOL_IS_ON(SOL_USE_LUAU)
+	extern "C" {
+		#include <lua.h>
+		#include <lualib.h>
+	}
 #elif SOL_IS_ON(SOL_USE_LUA_HPP)
 	#if __has_include(<lua/lua.hpp>)
 		#include <lua/lua.hpp>
